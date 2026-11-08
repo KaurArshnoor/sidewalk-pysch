@@ -1,0 +1,593 @@
+{
+  "snapshot": "top20-2023-core-2026-11-08T20:31:48.397069+00:00",
+  "synthetic": false,
+  "geography_id": "census2023-tract",
+  "files": {
+    "coverage.csv": "0f760c2c17ddaa14fb9beed7b34cd663382f3805050de0a22dd84d7d1308c6c3",
+    "crosswalk.csv": "3910d1f3ca90bb25189fe0a7f728f81d365645da5ee876486bbf8a9755ecab11",
+    "tracts.csv": "0ac4f37496b07f279f86f817d1e0b0b8041bda647de95d9f34be96c3d066c806",
+    "counties.csv": "7032957d9048f2fe61ea83bf1c183984c575f17f7b88b213fe76c28fc3798f25",
+    "state-coverage.csv": "18aab94e2f96a7bafc372d0cb0fabfa3b3ec426a156a1091f9c01300e3f8f017",
+    "geography-comparison.csv": "cf81c24b131127cbe2d6131405e211d52dea46cc7d7fc5847b4e8c671a042a35",
+    "metros.csv": "b730baa91a6ea47cd4e93430d1299f1cd62e7c8f9e9ee6d2925e61c3dc682796"
+  },
+  "sources": [
+    {
+      "id": "census-metros-2023",
+      "title": "Census Vintage 2023 metro population and county membership",
+      "url": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2023/metro/totals/cbsa-est2023-alldata.csv",
+      "release": "July 1, 2023 population estimates; July 2023 OMB delineations",
+      "geography": "2023-CBSA-and-counties",
+      "retrieved_at": "2026-11-08T20:31:44.242107+00:00",
+      "sha256": "f50dec6a6f05f925186c2127c7e3cd4d1e872215f8eb59b296ae5c50d99c6b50",
+      "notes": [
+        "Top twenty metropolitan statistical areas ranked by POPESTIMATE2023; metropolitan divisions and micropolitan areas excluded.",
+        "Raw file SHA256s: {\"metro-population.csv\": \"a15cdfd3c6f1bdfe1430dcdf70ab9fcf039a2c629ff7584be6693e981d434a03\"}"
+      ]
+    },
+    {
+      "id": "acs5-2023-bulk",
+      "title": "ACS 2019\u20132023 five-year Detailed Tables, official bulk files",
+      "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2023/table-based-SF/data/5YRData",
+      "release": "2023 ACS five-year",
+      "geography": "census2023-tract",
+      "retrieved_at": "2026-11-08T20:31:45.534281+00:00",
+      "sha256": "41beedf05d2b76ec3241ec20cf22af03bbff88ce503d7932bb740e5a166dbc17",
+      "notes": [
+        "Official bulk cells match the keyed Census API; no API key is used for these downloads.",
+        "Period estimates for 2019\u20132023; selected raw 90% margins of error retained, not propagated.",
+        "Fourteen Suffolk County NY tract rows are unpublished; Census collection-error suppression is documented at https://www.census.gov/programs-surveys/acs/technical-documentation/errata/148.html . These rows remain missing.",
+        "Poverty uses the population for whom poverty status is determined; Black alone and Hispanic of any race overlap.",
+        "Raw file SHA256s: {\"acs-b01001.dat\": \"dc68a9b588cea042c73dfb4e5cd5e896a6f6c404a3e75be70a99dc514ed7bc35\", \"acs-b01003.dat\": \"24ae3f523b4c54332ce0a71ba534569685a8a729056f975915d860d1eb943565\", \"acs-b02001.dat\": \"f355425cc181218fefd5d3db164c92cd4a617487a1a3927410bddf26ed26e599\", \"acs-b03003.dat\": \"8d1dc73b35b6dc5693692075a14e8b7c219534d84ce7729085ce4f62c8f17705\", \"acs-b17001.dat\": \"578e998daf0823a16e923e937cdff470392fcdd5fc1b0f963487ba5672c1c0b7\", \"acs-b19013.dat\": \"c9007017b7bb29ba758c77612ec9a4a0b897a4ed931d527754629866f580a110\"}"
+      ]
+    },
+    {
+      "id": "cdc-places-2025",
+      "title": "CDC PLACES frequent mental distress, crude prevalence",
+      "url": "https://chronicdata.cdc.gov/resource/cwsq-ngmh.json",
+      "release": "2025 release; BRFSS MHLTH 2023",
+      "geography": "census2023-tract",
+      "retrieved_at": "2026-11-08T20:31:45.548488+00:00",
+      "sha256": "f537b60519e02c3d5f6f8301c95a9af8d617850ae0da16bd468b91a077dc28f0",
+      "notes": [
+        "Modeled estimates, not direct tract observations; BRFSS/ACS/census inputs.",
+        "The 2025 release omits Pennsylvania and Kentucky estimates for 2023-BRFSS-based measures. Pennsylvania's omission leaves the Philadelphia metro partially observed; no older-release values are substituted. https://www.cdc.gov/places/current-release-notes/",
+        "Frequent mental distress: at least 14 mentally unhealthy days in the previous 30 days, adults 18+.",
+        "Does not directly measure loneliness or social connection, and cannot evaluate intervention effects.",
+        "Raw file SHA256s: {\"cdc-0.json\": \"067240a03d635fb6ae39197d14451cec9ff74291d1d7336d23bac082f1a394e0\", \"cdc-10000.json\": \"8a104267bdcafd9a83877ad3d47a86f52f56d4b04c432b6f2cf05232621fff29\", \"cdc-20000.json\": \"4e910fb4d321cec9eebf37491e4868bc67cdba7e5db86b4dd10b70baa25559d2\"}"
+      ]
+    },
+    {
+      "id": "epa-nwi-2021",
+      "title": "EPA National Walkability Index",
+      "url": "https://edg.epa.gov/data/Public/OA/WalkabilityIndex.zip",
+      "release": "2021 index; SLD 2019 geography; service GEOID20 labeled 2018; population TotPop 2018",
+      "geography": "EPA-source-block-groups",
+      "retrieved_at": "2026-11-08T20:31:46.738674+00:00",
+      "sha256": "290b2cb71420e4e12bca464c17eda4e9d9927fbaf2a1bffca5f5c815b9f20755",
+      "notes": [
+        "Index is relative walkability on a 1\u201320 scale, not measured walking, safety, or social interaction.",
+        "GEOID20 is a service field name, not a claim of 2020 geography; source IDs are matched to the author's 2019-block-group crosswalk.",
+        "Raw file SHA256s: {\"epa-national-attributes.csv\": \"7480fe8c64fe24131016bcc144de56474a62849caca71a3dc1e044ace51d79cd\", \"epa-nwi.zip\": \"8cec98c19e27e798a09a47ea58da395965f25c4a0cda565510c19b0cc97fdc19\"}"
+      ]
+    },
+    {
+      "id": "amos-crosswalk-v2",
+      "title": "Amos (2021), 2020 Census Block Crosswalk Data, V2",
+      "url": "https://doi.org/10.7910/DVN/T9VMJO",
+      "release": "V2, CC BY 4.0; 2019 block groups \u2192 2020 blocks",
+      "geography": "2019-BG-to-2020-blocks",
+      "retrieved_at": "2026-11-08T20:31:46.818289+00:00",
+      "sha256": "61fe795142ddc6f2231c24bc59084fc9168ec081e6c2e75f5900fb2a520b25c6",
+      "notes": [
+        "Crosswalk uses 2010 population and NLCD2016-informed interpolation within split blocks; it is an estimate, not observed 2023 population movement.",
+        "Outgoing population shares are normalized only within 0.5% rounding tolerance, then multiplied by each EPA block group's 2018 TotPop to form population masses.",
+        "2020 block parent tract IDs are validated against both 2020 and 2023 tract inventories; this is not proof of exact polygon equality.",
+        "Main walkability additionally excludes targets with more than 1% land-area change between 2020 and 2023 or an undefined area comparison. This is a study QC rule, not a validated accuracy threshold.",
+        "Main walkability excludes tracts with unsupported positive-population blocks in the author's reallocated ACS2019 reference population. Partial scores are retained separately.",
+        "Attribution: Brian Amos (2021), doi:10.7910/DVN/T9VMJO, Harvard Dataverse V2; CC BY 4.0.",
+        "Raw file SHA256s: {\"uf-acs19-block20-pop.zip\": \"71390257eb69147f4b2dfdc7fdc5d7612b7adf6f0e1d86a300daf9cae52cdd03\", \"uf-bg19-block20.zip\": \"ac71dda0911f6fe22c5b19c308392309dddc0934c51f74d59234c718c9fba9a2\", \"uf-readme.txt\": \"4b4e36ff9e818bb2d0d722e8d092444803d4ce7649aa3a62ab7356b2add9d352\"}"
+      ]
+    },
+    {
+      "id": "census-tiger-2023",
+      "title": "Census TIGERweb 2023 ACS tract land areas",
+      "url": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2023/MapServer/8",
+      "release": "2023 ACS geography, compared with Census 2020 tract inventory",
+      "geography": "census2023-tract",
+      "retrieved_at": "2026-11-08T20:31:46.828070+00:00",
+      "sha256": "d412827d3669c779fe5b3b598dafdcec03f5c858fd71d0cdd6c790845d45e229",
+      "notes": [
+        "Population density uses ACS population / Census AREALAND in square kilometers.",
+        "Inventory agreement does not guarantee identical 2020/2023 polygon boundaries; land-area differences are recorded in geography-comparison.csv.",
+        "Raw file SHA256s: {\"tract2020-national.json\": \"756cfd3bdd2df7769e1c4de2763a0477c602aa1da0ffc93f37e27fca64fbf0cb\", \"tract2023-national.json\": \"0f71012920259e544be24c2a9c0c49385ff94df5154e3bc98466c4c6efe7f5cb\"}"
+      ]
+    }
+  ],
+  "column_sources": {
+    "population": [
+      "acs5-2023-bulk"
+    ],
+    "income": [
+      "acs5-2023-bulk"
+    ],
+    "income_moe": [
+      "acs5-2023-bulk"
+    ],
+    "poverty_pct": [
+      "acs5-2023-bulk"
+    ],
+    "poverty_count_moe": [
+      "acs5-2023-bulk"
+    ],
+    "black_pct": [
+      "acs5-2023-bulk"
+    ],
+    "hispanic_pct": [
+      "acs5-2023-bulk"
+    ],
+    "age65_pct": [
+      "acs5-2023-bulk"
+    ],
+    "distress_pct": [
+      "cdc-places-2025"
+    ],
+    "distress_ci_low": [
+      "cdc-places-2025"
+    ],
+    "distress_ci_high": [
+      "cdc-places-2025"
+    ],
+    "crosswalk_reference_population": [
+      "epa-nwi-2021",
+      "amos-crosswalk-v2",
+      "census-tiger-2023"
+    ],
+    "epa_population_coverage_pct": [
+      "epa-nwi-2021",
+      "amos-crosswalk-v2",
+      "census-tiger-2023"
+    ],
+    "walkability_partial": [
+      "epa-nwi-2021",
+      "amos-crosswalk-v2",
+      "census-tiger-2023"
+    ],
+    "walkability": [
+      "epa-nwi-2021",
+      "amos-crosswalk-v2",
+      "census-tiger-2023"
+    ],
+    "land_area_2023": [
+      "census-tiger-2023"
+    ],
+    "boundary_land_area_change_pct": [
+      "census-tiger-2023"
+    ],
+    "boundary_review_excluded": [
+      "census-tiger-2023"
+    ],
+    "pop_density": [
+      "acs5-2023-bulk",
+      "census-tiger-2023"
+    ]
+  },
+  "scope": {
+    "description": "Twenty largest US metropolitan statistical areas by Census Vintage 2023 population; full constituent counties, July 2023 OMB delineations.",
+    "ranking_year": 2023,
+    "population_field": "POPESTIMATE2023",
+    "top20_verified": true,
+    "structural_health_gaps": [
+      {
+        "state_fips": "42",
+        "tracts": 1050,
+        "health_available": 0
+      }
+    ],
+    "metro_count": 20,
+    "county_count": 186,
+    "metro_lookup": [
+      {
+        "rank": 1,
+        "metro": "35620",
+        "name": "New York-Newark-Jersey City, NY-NJ",
+        "population_2023": 19498249
+      },
+      {
+        "rank": 2,
+        "metro": "31080",
+        "name": "Los Angeles-Long Beach-Anaheim, CA",
+        "population_2023": 12799100
+      },
+      {
+        "rank": 3,
+        "metro": "16980",
+        "name": "Chicago-Naperville-Elgin, IL-IN",
+        "population_2023": 9262825
+      },
+      {
+        "rank": 4,
+        "metro": "19100",
+        "name": "Dallas-Fort Worth-Arlington, TX",
+        "population_2023": 8100037
+      },
+      {
+        "rank": 5,
+        "metro": "26420",
+        "name": "Houston-Pasadena-The Woodlands, TX",
+        "population_2023": 7510253
+      },
+      {
+        "rank": 6,
+        "metro": "12060",
+        "name": "Atlanta-Sandy Springs-Roswell, GA",
+        "population_2023": 6307261
+      },
+      {
+        "rank": 7,
+        "metro": "47900",
+        "name": "Washington-Arlington-Alexandria, DC-VA-MD-WV",
+        "population_2023": 6304975
+      },
+      {
+        "rank": 8,
+        "metro": "37980",
+        "name": "Philadelphia-Camden-Wilmington, PA-NJ-DE-MD",
+        "population_2023": 6246160
+      },
+      {
+        "rank": 9,
+        "metro": "33100",
+        "name": "Miami-Fort Lauderdale-West Palm Beach, FL",
+        "population_2023": 6183199
+      },
+      {
+        "rank": 10,
+        "metro": "38060",
+        "name": "Phoenix-Mesa-Chandler, AZ",
+        "population_2023": 5070110
+      },
+      {
+        "rank": 11,
+        "metro": "14460",
+        "name": "Boston-Cambridge-Newton, MA-NH",
+        "population_2023": 4919179
+      },
+      {
+        "rank": 12,
+        "metro": "40140",
+        "name": "Riverside-San Bernardino-Ontario, CA",
+        "population_2023": 4688053
+      },
+      {
+        "rank": 13,
+        "metro": "41860",
+        "name": "San Francisco-Oakland-Fremont, CA",
+        "population_2023": 4566961
+      },
+      {
+        "rank": 14,
+        "metro": "19820",
+        "name": "Detroit-Warren-Dearborn, MI",
+        "population_2023": 4342304
+      },
+      {
+        "rank": 15,
+        "metro": "42660",
+        "name": "Seattle-Tacoma-Bellevue, WA",
+        "population_2023": 4044837
+      },
+      {
+        "rank": 16,
+        "metro": "33460",
+        "name": "Minneapolis-St. Paul-Bloomington, MN-WI",
+        "population_2023": 3712020
+      },
+      {
+        "rank": 17,
+        "metro": "45300",
+        "name": "Tampa-St. Petersburg-Clearwater, FL",
+        "population_2023": 3342963
+      },
+      {
+        "rank": 18,
+        "metro": "41740",
+        "name": "San Diego-Chula Vista-Carlsbad, CA",
+        "population_2023": 3269973
+      },
+      {
+        "rank": 19,
+        "metro": "19740",
+        "name": "Denver-Aurora-Centennial, CO",
+        "population_2023": 3005131
+      },
+      {
+        "rank": 20,
+        "metro": "12580",
+        "name": "Baltimore-Columbia-Towson, MD",
+        "population_2023": 2834316
+      }
+    ],
+    "coverage": [
+      {
+        "rank": 1,
+        "metro": "35620",
+        "name": "New York-Newark-Jersey City, NY-NJ",
+        "population_2023": 19498249,
+        "tracts": 4928,
+        "walkability": 4816,
+        "distress": 4817,
+        "acs_population": 19677426.0,
+        "complete_adjusted": 4719,
+        "health_coverage_pct": 97.74756493506493,
+        "complete_adjusted_coverage_pct": 95.75892857142857
+      },
+      {
+        "rank": 2,
+        "metro": "31080",
+        "name": "Los Angeles-Long Beach-Anaheim, CA",
+        "population_2023": 12799100,
+        "tracts": 3112,
+        "walkability": 3066,
+        "distress": 3086,
+        "acs_population": 13012469.0,
+        "complete_adjusted": 3039,
+        "health_coverage_pct": 99.16452442159382,
+        "complete_adjusted_coverage_pct": 97.65424164524421
+      },
+      {
+        "rank": 3,
+        "metro": "16980",
+        "name": "Chicago-Naperville-Elgin, IL-IN",
+        "population_2023": 9262825,
+        "tracts": 2292,
+        "walkability": 2267,
+        "distress": 2282,
+        "acs_population": 9359555.0,
+        "complete_adjusted": 2255,
+        "health_coverage_pct": 99.56369982547993,
+        "complete_adjusted_coverage_pct": 98.38568935427574
+      },
+      {
+        "rank": 4,
+        "metro": "19100",
+        "name": "Dallas-Fort Worth-Arlington, TX",
+        "population_2023": 8100037,
+        "tracts": 1704,
+        "walkability": 1681,
+        "distress": 1699,
+        "acs_population": 7807555.0,
+        "complete_adjusted": 1677,
+        "health_coverage_pct": 99.70657276995306,
+        "complete_adjusted_coverage_pct": 98.41549295774648
+      },
+      {
+        "rank": 5,
+        "metro": "26420",
+        "name": "Houston-Pasadena-The Woodlands, TX",
+        "population_2023": 7510253,
+        "tracts": 1615,
+        "walkability": 1604,
+        "distress": 1605,
+        "acs_population": 7274714.0,
+        "complete_adjusted": 1587,
+        "health_coverage_pct": 99.38080495356037,
+        "complete_adjusted_coverage_pct": 98.26625386996903
+      },
+      {
+        "rank": 6,
+        "metro": "12060",
+        "name": "Atlanta-Sandy Springs-Roswell, GA",
+        "population_2023": 6307261,
+        "tracts": 1504,
+        "walkability": 1462,
+        "distress": 1501,
+        "acs_population": 6176937.0,
+        "complete_adjusted": 1449,
+        "health_coverage_pct": 99.80053191489361,
+        "complete_adjusted_coverage_pct": 96.34308510638297
+      },
+      {
+        "rank": 7,
+        "metro": "47900",
+        "name": "Washington-Arlington-Alexandria, DC-VA-MD-WV",
+        "population_2023": 6304975,
+        "tracts": 1464,
+        "walkability": 1449,
+        "distress": 1455,
+        "acs_population": 6263796.0,
+        "complete_adjusted": 1437,
+        "health_coverage_pct": 99.38524590163935,
+        "complete_adjusted_coverage_pct": 98.15573770491804
+      },
+      {
+        "rank": 8,
+        "metro": "37980",
+        "name": "Philadelphia-Camden-Wilmington, PA-NJ-DE-MD",
+        "population_2023": 6246160,
+        "tracts": 1556,
+        "walkability": 1526,
+        "distress": 503,
+        "acs_population": 6241882.0,
+        "complete_adjusted": 499,
+        "health_coverage_pct": 32.326478149100254,
+        "complete_adjusted_coverage_pct": 32.0694087403599
+      },
+      {
+        "rank": 9,
+        "metro": "33100",
+        "name": "Miami-Fort Lauderdale-West Palm Beach, FL",
+        "population_2023": 6183199,
+        "tracts": 1497,
+        "walkability": 1454,
+        "distress": 1477,
+        "acs_population": 6138876.0,
+        "complete_adjusted": 1445,
+        "health_coverage_pct": 98.66399465597863,
+        "complete_adjusted_coverage_pct": 96.52638610554442
+      },
+      {
+        "rank": 10,
+        "metro": "38060",
+        "name": "Phoenix-Mesa-Chandler, AZ",
+        "population_2023": 5070110,
+        "tracts": 1104,
+        "walkability": 1088,
+        "distress": 1088,
+        "acs_population": 4941206.0,
+        "complete_adjusted": 1073,
+        "health_coverage_pct": 98.55072463768116,
+        "complete_adjusted_coverage_pct": 97.19202898550725
+      },
+      {
+        "rank": 11,
+        "metro": "14460",
+        "name": "Boston-Cambridge-Newton, MA-NH",
+        "population_2023": 4919179,
+        "tracts": 1134,
+        "walkability": 1110,
+        "distress": 1113,
+        "acs_population": 4917661.0,
+        "complete_adjusted": 1099,
+        "health_coverage_pct": 98.14814814814815,
+        "complete_adjusted_coverage_pct": 96.91358024691358
+      },
+      {
+        "rank": 12,
+        "metro": "40140",
+        "name": "Riverside-San Bernardino-Ontario, CA",
+        "population_2023": 4688053,
+        "tracts": 984,
+        "walkability": 969,
+        "distress": 982,
+        "acs_population": 4637725.0,
+        "complete_adjusted": 963,
+        "health_coverage_pct": 99.79674796747967,
+        "complete_adjusted_coverage_pct": 97.86585365853658
+      },
+      {
+        "rank": 13,
+        "metro": "41860",
+        "name": "San Francisco-Oakland-Fremont, CA",
+        "population_2023": 4566961,
+        "tracts": 1102,
+        "walkability": 1070,
+        "distress": 1092,
+        "acs_population": 4653593.0,
+        "complete_adjusted": 1059,
+        "health_coverage_pct": 99.09255898366607,
+        "complete_adjusted_coverage_pct": 96.09800362976407
+      },
+      {
+        "rank": 14,
+        "metro": "19820",
+        "name": "Detroit-Warren-Dearborn, MI",
+        "population_2023": 4342304,
+        "tracts": 1356,
+        "walkability": 1326,
+        "distress": 1297,
+        "acs_population": 4367620.0,
+        "complete_adjusted": 1277,
+        "health_coverage_pct": 95.64896755162242,
+        "complete_adjusted_coverage_pct": 94.1740412979351
+      },
+      {
+        "rank": 15,
+        "metro": "42660",
+        "name": "Seattle-Tacoma-Bellevue, WA",
+        "population_2023": 4044837,
+        "tracts": 863,
+        "walkability": 849,
+        "distress": 860,
+        "acs_population": 4021467.0,
+        "complete_adjusted": 848,
+        "health_coverage_pct": 99.65237543453071,
+        "complete_adjusted_coverage_pct": 98.26187717265353
+      },
+      {
+        "rank": 16,
+        "metro": "33460",
+        "name": "Minneapolis-St. Paul-Bloomington, MN-WI",
+        "population_2023": 3712020,
+        "tracts": 892,
+        "walkability": 878,
+        "distress": 890,
+        "acs_population": 3693351.0,
+        "complete_adjusted": 875,
+        "health_coverage_pct": 99.77578475336323,
+        "complete_adjusted_coverage_pct": 98.09417040358744
+      },
+      {
+        "rank": 17,
+        "metro": "45300",
+        "name": "Tampa-St. Petersburg-Clearwater, FL",
+        "population_2023": 3342963,
+        "tracts": 788,
+        "walkability": 742,
+        "distress": 776,
+        "acs_population": 3240469.0,
+        "complete_adjusted": 740,
+        "health_coverage_pct": 98.4771573604061,
+        "complete_adjusted_coverage_pct": 93.90862944162437
+      },
+      {
+        "rank": 18,
+        "metro": "41740",
+        "name": "San Diego-Chula Vista-Carlsbad, CA",
+        "population_2023": 3269973,
+        "tracts": 737,
+        "walkability": 734,
+        "distress": 735,
+        "acs_population": 3282782.0,
+        "complete_adjusted": 728,
+        "health_coverage_pct": 99.72862957937585,
+        "complete_adjusted_coverage_pct": 98.77883310719132
+      },
+      {
+        "rank": 19,
+        "metro": "19740",
+        "name": "Denver-Aurora-Centennial, CO",
+        "population_2023": 3005131,
+        "tracts": 707,
+        "walkability": 685,
+        "distress": 698,
+        "acs_population": 2977085.0,
+        "complete_adjusted": 680,
+        "health_coverage_pct": 98.72701555869872,
+        "complete_adjusted_coverage_pct": 96.18104667609619
+      },
+      {
+        "rank": 20,
+        "metro": "12580",
+        "name": "Baltimore-Columbia-Towson, MD",
+        "population_2023": 2834316,
+        "tracts": 717,
+        "walkability": 709,
+        "distress": 709,
+        "acs_population": 2839409.0,
+        "complete_adjusted": 701,
+        "health_coverage_pct": 98.88423988842399,
+        "complete_adjusted_coverage_pct": 97.76847977684798
+      }
+    ]
+  },
+  "definitions": {
+    "distress_pct": "Modeled crude adult frequent mental-distress prevalence (%).",
+    "walkability": "Population-mass weighted EPA index on a 1\u201320 scale, strict support sample.",
+    "walkability_partial": "Diagnostic EPA score before excluding incomplete crosswalk support; not the primary exposure.",
+    "epa_population_coverage_pct": "Percent of author's modeled ACS2019 block population supported by usable EPA sources.",
+    "pop_density": "ACS residents per square kilometer of Census land area.",
+    "park_access_pct": "Not loaded in this core study snapshot.",
+    "amenities_per_1000": "Not loaded in this core study snapshot."
+  },
+  "caveats": [
+    "Cross-sectional tract associations cannot establish causation or individual effects.",
+    "The study combines older built-environment measures, interpolated population weights, ACS period estimates, and modeled 2023 health outcomes.",
+    "Crosswalk review is documented and checked in code, not an independent validation of interpolated weights.",
+    "Minor boundary/cartographic changes can remain even when 2020 and 2023 tract ID inventories agree.",
+    "CDC PLACES 2025 omits Pennsylvania's 2023 frequent-mental-distress estimates. Philadelphia health/model samples cover only available non-Pennsylvania portions, not the full metro. Do not generalize those subset results to the whole metro. See https://www.cdc.gov/places/current-release-notes/ .",
+    "No direct loneliness or social-connection measures; park access and OSM amenities are not yet loaded.",
+    "No tract adjacency file is included; residual Moran diagnostics are unavailable, while metro clustering remains available.",
+    "Missing observations remain missing; the analyst must disclose complete-case exclusions."
+  ]
+}

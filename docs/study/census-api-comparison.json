@@ -1,0 +1,17 @@
+{
+  "api_access": "verified",
+  "checked_at": "2026-11-08T20:33:15.345929+00:00",
+  "sample_geoid": "36061002400",
+  "compared_columns": {
+    "population": true,
+    "income": true,
+    "income_moe": true,
+    "poverty_pct": true,
+    "poverty_count_moe": true,
+    "black_pct": true,
+    "hispanic_pct": true,
+    "age65_pct": true
+  },
+  "all_match": true,
+  "endpoint": "https://api.census.gov/data/2023/acs/acs5"
+}

@@ -218,3 +218,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Offline downloads; curated small snapshots may be committed separately.
+data/raw/
+eval_results/
