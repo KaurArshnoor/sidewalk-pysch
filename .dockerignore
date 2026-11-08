@@ -5,7 +5,7 @@
 .ruff_cache
 __pycache__
 data/raw
-eval_results
+evals/results
 
 # Controlled numerical inputs belong to local tests, never the deployed app.
 tests/

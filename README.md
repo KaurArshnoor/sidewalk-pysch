@@ -23,14 +23,27 @@ uv run app.py --agent analyst --question "Compare unadjusted and adjusted walkab
 |---|---|
 | **`app.py`** | Three agents, their tool wrappers, research runs, and web routes |
 | **`data.py`** | Load the dataset, compute statistics, and attach sources/caveats to findings |
-| `index.html` | Frontend |
-| `context_panel.py`, `context-panel.js` | Model/tool trace panel from the starter |
-| `build_data.py` | Offline source downloads, cleaning, crosswalk, and dataset export |
-| `check.py` | Check the three real agents; optionally capture no-tools baselines |
-| `evals.py`, `eval_questions.json` | Run the assignment’s research evaluation questions |
+| `web/index.html` | Frontend |
+| `web/context_panel.py`, `web/context-panel.js` | Model/tool trace panel from the starter |
+| `scripts/build_data.py` | Offline source downloads, cleaning, crosswalk, and dataset export |
+| `scripts/check.py` | Check the three real agents; optionally capture no-tools baselines |
+| `evals/run.py`, `evals/questions.json` | Run the assignment’s research evaluation questions |
 | `tests/` | Calculation, data-integrity, and API tests |
 
-Start with `app.py`, then follow its calls into `data.py`. The offline build is separate from answering questions.
+Start with `app.py`, then follow its calls into `data.py`. Supporting code is grouped by purpose:
+
+```text
+app.py                 agents and web entry point
+data.py                data tools and calculations
+web/                   page and original trace panel
+scripts/               offline data build and live checks
+evals/                 evaluation runner and questions
+tests/                 automated tests
+data/processed/study/  real study dataset and audit
+docs/study/            source methods and recorded results
+```
+
+The offline build is separate from answering questions.
 
 The built-environment agent describes EPA walkability. The health/demographics agent describes CDC and ACS measures. The analyst computes unadjusted/adjusted models and poverty interactions. All return `claim, evidence, source_ids, confidence, caveats` for the shared Writer. Numerical claims come from Python tools; the model can select only findings those tools produced.
 
@@ -52,11 +65,11 @@ No invented study data are shipped. Controlled numerical inputs are generated on
 uv sync --extra dev
 uv run pytest -q
 uv run ruff check .
-uv run python check.py
-uv run python build_data.py --check-census
+uv run python -m scripts.check
+uv run python -m scripts.build_data --check-census
 ```
 
-`check.py` makes real LLM calls through `/chat`. `check.py --baselines` also makes three same-model calls with no supplied system prompt or tools. Keep API keys in `.env`.
+`scripts/check.py` makes real LLM calls through `/chat`. `python -m scripts.check --baselines` also makes three same-model calls with no supplied system prompt or tools. Keep API keys in `.env`.
 
 ## Rebuild data (optional)
 
@@ -64,7 +77,7 @@ The prepared data are included; rebuilding is only needed when changing sources 
 
 ```sh
 uv sync --extra build
-uv run python build_data.py
+uv run python -m scripts.build_data
 ```
 
 This caches public downloads under `data/raw/study`, checks source files and geographic coverage, applies the published population crosswalk, and exports the prepared snapshot. Raw downloads are ignored by Git and Docker. The crosswalk is documented and checked in code, not independently peer reviewed.
@@ -82,11 +95,11 @@ Answers come from `data/processed/study/tracts.csv` and the profile/model tools.
 ## Evals and team integration
 
 ```sh
-uv run python evals.py --limit 3
-uv run python evals.py --judge
+uv run python -m evals.run --limit 3
+uv run python -m evals.run --judge
 ```
 
-Twenty hand-authored questions cover supported measures, missing layers, clarification, citations, and statistical limits. The runner has deterministic checks and an optional reference-based rubric judge. Results go to `eval_results/`; do not report scores until measured on the current data.
+Twenty hand-authored questions cover supported measures, missing layers, clarification, citations, and statistical limits. The runner has deterministic checks and an optional reference-based rubric judge. Results go to `evals/results/`; do not report scores until measured on the current data.
 
 Person A can import `run_agent` from `app.py` and pass `result.model_dump()` to the Writer. Each call starts a fresh context. `POST /chat` accepts `message` and `agent`; responses include `response`, agent-labeled `tool_calls`, structured `result`, and `run_id`. `/run` retains the starter’s SSE activity stream. Confirm exact Project 1 fields before final team integration.
 

@@ -209,7 +209,7 @@ class PanelHooks(RunHooks):
 
 
 if __name__ == "__main__":
-    # Self-check: uv run context_panel.py
+    # Self-check: uv run python -m web.context_panel
     log = AgentContexts()
     sys_a, sys_b, url = {"role": "system", "content": "A"}, {"role": "system", "content": "B"}, {"role": "user", "content": "url"}
     call, ok = {"role": "assistant", "content": None, "tool_calls": [{"name": "t", "arguments": {}}]}, {"role": "tool", "content": "ok"}

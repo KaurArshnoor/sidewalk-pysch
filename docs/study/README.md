@@ -11,7 +11,7 @@ To enable the direct API:
 1. Register at [Census API key signup](https://api.census.gov/data/key_signup.html).
 2. Follow the activation link Census sends to your email.
 3. Add `CENSUS_API_KEY=your_key` to this repo’s local `.env`; keep it out of Git and chat.
-4. Run `uv run python build_data.py --check-census` to validate it without printing the key.
+4. Run `uv run python -m scripts.build_data --check-census` to validate it without printing the key.
 
 ## Fixed study definitions
 
@@ -71,8 +71,8 @@ The [CDC 2025 release notes](https://www.cdc.gov/places/current-release-notes/) 
 
 ```sh
 uv sync --extra build --extra dev
-uv run python build_data.py
-uv run python check.py
+uv run python -m scripts.build_data
+uv run python -m scripts.check
 uv run pytest -q
 ```
 
@@ -88,6 +88,6 @@ Final validation: **40 software tests passed**, lint passed, and all three live 
 
 Runtime cleanup: the app and CLI load the real study by default and reject synthetic snapshots. Controlled numerical fixtures are created only in pytest temporary directories; they are excluded from the deployed image.
 
-Code layout: `app.py` contains the agents and routes; `data.py` contains their deterministic data tools; `build_data.py` is the offline build. The runtime uses the same two-file pattern as the original starter.
+Code layout: `app.py` contains the agents and routes; `data.py` contains their deterministic data tools; `scripts/build_data.py` is the offline build. The runtime uses the same two-file pattern as the original starter.
 
 The simplified repository uses two runtime files: `app.py` and `data.py`. The optional source reader uses GDAL attribute arrays without a spatial dataframe dependency. All three agents and the Census API were checked after restructuring.

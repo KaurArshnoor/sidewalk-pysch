@@ -111,3 +111,11 @@ async def test_unconfigured_dataset_defaults_to_real_study(api_app, monkeypatch)
         assert response.status_code == 200
         assert response.json()["synthetic"] is False
         assert response.json()["rows"] == 30056
+
+
+async def test_web_assets_are_served_from_the_web_folder(api_app):
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=api_app), base_url="http://test") as client:
+        page = await client.get("/")
+        assert page.status_code == 200 and "Sidewalk Psych" in page.text
+        script = await client.get("/context-panel.js")
+        assert script.status_code == 200 and "showContext" in script.text

@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from build_data import ACS_VARIABLES
-from build_data import arcgis_inventory, crosswalk_weights, parse_crosswalk_row, read_acs_bulk, review_boundaries, select_metros
+from scripts.build_data import ACS_VARIABLES
+from scripts.build_data import arcgis_inventory, crosswalk_weights, parse_crosswalk_row, read_acs_bulk, review_boundaries, select_metros
 
 
 def test_rank_metro_totals_and_restore_county_fips():
@@ -88,7 +88,7 @@ def test_arcgis_pagination_checks_count_and_caches(monkeypatch, tmp_path):
             return {"count": 3}
         offset = params["resultOffset"]
         return {"features": [{"attributes": {"id": i}} for i in range(offset, min(offset + 2, 3))]}
-    monkeypatch.setattr("build_data.cache_json", fake)
+    monkeypatch.setattr("scripts.build_data.cache_json", fake)
     frame = arcgis_inventory(tmp_path, "test", "https://example.org", "1=1", "id", page_size=2)
     assert list(frame.id) == [0, 1, 2]
     saved = json.loads((tmp_path / "test.json").read_text())
@@ -96,7 +96,7 @@ def test_arcgis_pagination_checks_count_and_caches(monkeypatch, tmp_path):
 
 
 def test_arcgis_truncation_is_an_error(monkeypatch, tmp_path):
-    monkeypatch.setattr("build_data.cache_json", lambda *a: {"count": 3} if a[-1].get("returnCountOnly") else {"features": []})
+    monkeypatch.setattr("scripts.build_data.cache_json", lambda *a: {"count": 3} if a[-1].get("returnCountOnly") else {"features": []})
     with pytest.raises(ValueError, match="Truncated"):
         arcgis_inventory(tmp_path, "test", "https://example.org", "1=1", "id")
 
