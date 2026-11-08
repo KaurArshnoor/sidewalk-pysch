@@ -1,0 +1,11 @@
+.git
+.venv
+.env
+.pytest_cache
+.ruff_cache
+__pycache__
+data/raw
+eval_results
+
+# Controlled numerical inputs belong to local tests, never the deployed app.
+tests/

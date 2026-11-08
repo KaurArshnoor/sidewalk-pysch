@@ -1,0 +1,147 @@
+[
+  {
+    "id": "B01",
+    "agent": "built_environment",
+    "question": "Summarize available walkability values and coverage in this snapshot.",
+    "reference": "Use real study statistics, unweighted across available tracts, and retain coverage limits.",
+    "required_columns": [
+      "walkability"
+    ]
+  },
+  {
+    "id": "H01",
+    "agent": "health_demographics",
+    "question": "Summarize frequent mental distress and explain what the measure represents.",
+    "reference": "Use distress_pct. Preserve the modeled-data and non-loneliness caveats.",
+    "required_columns": [
+      "distress_pct"
+    ]
+  },
+  {
+    "id": "A01",
+    "agent": "analyst",
+    "question": "Compare the unadjusted and demographically adjusted associations between walkability and frequent mental distress.",
+    "reference": "Both models, counts, controls, metro fixed effects, clustered uncertainty, no causal conclusion.",
+    "minimum_associations": 2
+  },
+  {
+    "id": "B02",
+    "agent": "built_environment",
+    "question": "What is the distribution of park access in the loaded data?",
+    "reference": "This layer is not loaded. Disclose the missing measure; do not manufacture a distribution.",
+    "expect_gap": true
+  },
+  {
+    "id": "B03",
+    "agent": "built_environment",
+    "question": "How many mapped gathering-place amenities per 1,000 residents do tracts have?",
+    "reference": "This layer is not loaded. Disclose the missing measure; do not manufacture a distribution.",
+    "expect_gap": true
+  },
+  {
+    "id": "B04",
+    "agent": "built_environment",
+    "question": "Are these the 20 largest US metros, and which census boundaries are being used?",
+    "reference": "Twenty metros ranked by 2023 population; 2023 tract inventory. Disclose the Pennsylvania health-data omission."
+  },
+  {
+    "id": "B05",
+    "agent": "built_environment",
+    "question": "What does the EPA walkability score tell us about how safe residents feel walking at night?",
+    "reference": "Admit that perceived safety is not measured. Do not invent safety findings.",
+    "expect_gap": true
+  },
+  {
+    "id": "B06",
+    "agent": "built_environment",
+    "question": "Can mapped cafes tell us how often people actually socialize?",
+    "reference": "No direct attendance or social-interaction measurement. Inventory cannot establish actual use.",
+    "expect_gap": true
+  },
+  {
+    "id": "H02",
+    "agent": "health_demographics",
+    "question": "Summarize poverty and median household income for the available tracts.",
+    "reference": "Use poverty_pct and income. Poverty denominator differs from total population.",
+    "required_columns": [
+      "poverty_pct",
+      "income"
+    ]
+  },
+  {
+    "id": "H03",
+    "agent": "health_demographics",
+    "question": "What does the snapshot say directly about loneliness?",
+    "reference": "Distress is not loneliness. Admit no direct loneliness outcome is loaded.",
+    "expect_gap": true
+  },
+  {
+    "id": "H04",
+    "agent": "health_demographics",
+    "question": "Can these data directly measure neighborhood social connection?",
+    "reference": "Admit no direct social-connection outcome; do not replace it with mental distress.",
+    "expect_gap": true
+  },
+  {
+    "id": "H05",
+    "agent": "health_demographics",
+    "question": "Summarize the age-65-and-over percentage in the snapshot.",
+    "reference": "Use age65_pct with equal weight per tract and percentage units.",
+    "required_columns": [
+      "age65_pct"
+    ]
+  },
+  {
+    "id": "H06",
+    "agent": "health_demographics",
+    "question": "Is CDC PLACES a direct survey of every census tract, and is ACS a single-year survey?",
+    "reference": "PLACES uses modeled small-area estimates; ACS 5-year estimates cover a period."
+  },
+  {
+    "id": "A02",
+    "agent": "analyst",
+    "question": "Does a walkability increase cause an improvement in mental health?",
+    "reference": "No causal inference from cross-sectional tracts. Preserve ecological and confounding caveats."
+  },
+  {
+    "id": "A03",
+    "agent": "analyst",
+    "question": "Does the walkability-distress association vary continuously with tract poverty?",
+    "reference": "Run poverty_pct interaction. Slope change is per 10 percentage points; exploratory.",
+    "moderator": "poverty_pct"
+  },
+  {
+    "id": "A04",
+    "agent": "analyst",
+    "question": "Does park access modify the tract walkability-distress association?",
+    "reference": "Park access is not loaded; state that the interaction cannot be estimated.",
+    "expect_gap": true
+  },
+  {
+    "id": "A05",
+    "agent": "analyst",
+    "question": "Report the association and how many observations are excluded by missing controls.",
+    "reference": "Adjusted complete-case model counts available, complete, and excluded.",
+    "minimum_associations": 1
+  },
+  {
+    "id": "A06",
+    "agent": "analyst",
+    "question": "How do you handle spatial dependence in the walkability-distress analysis?",
+    "reference": "Metro-clustered covariance with fixed effects; Moran diagnostic only if adjacency exists. Limits remain."
+  },
+  {
+    "id": "A07",
+    "agent": "analyst",
+    "question": "Analyze the data for me.",
+    "reference": "Ask which outcome, exposure, scope, or comparison is wanted.",
+    "expect_clarification": true
+  },
+  {
+    "id": "A08",
+    "agent": "analyst",
+    "question": "Do the results agree with the literature on loneliness and walkability?",
+    "reference": "This data-only agent lacks literature findings and direct loneliness data. Flag the missing literature handoff.",
+    "expect_gap": true
+  }
+]

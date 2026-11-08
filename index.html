@@ -1,200 +1,59 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Wikipedia Deep Research</title>
-        <style>
-            * {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
-            }
-            body {
-                font-family: system-ui, sans-serif;
-                padding: 2rem;
-                color: #111;
-            }
-            main {
-                max-width: 760px;
-                margin: 0 auto;
-                display: flex;
-                flex-direction: column;
-                gap: 1.5rem;
-            }
-            section {
-                border: 1px solid #e0e0e0;
-                padding: 1.25rem 1.5rem;
-            }
-            h1 {
-                font-size: 1rem;
-                font-weight: 600;
-            }
-            h2 {
-                font-size: 0.75rem;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                color: #999;
-                font-weight: 400;
-                margin-bottom: 0.75rem;
-                display: flex;
-                justify-content: space-between;
-                align-items: baseline;
-            }
-            #question,
-            #url {
-                width: 100%;
-                padding: 0.6rem 0;
-                border: none;
-                border-bottom: 1px solid #e0e0e0;
-                font-size: 1rem;
-                outline: none;
-            }
-            #question:focus,
-            #url:focus {
-                border-bottom-color: #000;
-            }
-            #task label {
-                display: block;
-                font-size: 0.75rem;
-                color: #999;
-            }
-            #task label + label {
-                margin-top: 1rem;
-            }
-            #run {
-                margin-top: 1rem;
-            }
-            button {
-                padding: 0.75rem 1.5rem;
-                background: #000;
-                color: #fff;
-                border: none;
-                font-size: 0.75rem;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                cursor: pointer;
-            }
-            button:disabled {
-                opacity: 0.3;
-            }
-            #activity {
-                list-style: none;
-                font-size: 0.85rem;
-                line-height: 1.7;
-            }
-            #activity .agent {
-                font-weight: 600;
-            }
-            #activity .error {
-                color: #dc2626;
-            }
-            #status {
-                color: #999;
-                text-transform: none;
-                letter-spacing: 0;
-            }
-            #output {
-                font-family: ui-monospace, monospace;
-                font-size: 0.8rem;
-                white-space: pre-wrap;
-                word-break: break-word;
-                line-height: 1.5;
-            }
-            .empty {
-                color: #999;
-            }
-        </style>
-    </head>
-    <body>
-        <main>
-            <h1>Deep research: a lead splits your question, researchers walk Wikipedia in parallel, and a writer turns their findings into a cited report</h1>
-
-            <section>
-                <h2>Task</h2>
-                <form id="task">
-                    <label>Question
-                        <input id="question" value="How did the Apollo program's computers influence later computing?" placeholder="What do you want to know?" autocomplete="off" />
-                    </label>
-                    <label>Starting article
-                        <input id="url" value="https://en.wikipedia.org/wiki/Apollo_program" placeholder="A Wikipedia URL, e.g. https://en.wikipedia.org/wiki/Apollo_program" autocomplete="off" />
-                    </label>
-                    <button id="run" type="submit">Run</button>
-                </form>
-            </section>
-
-            <section>
-                <h2>Activity <span id="status"></span></h2>
-                <ol id="activity"><li class="empty">Each agent's steps appear here.</li></ol>
-            </section>
-
-            <section>
-                <h2>Output</h2>
-                <div id="output" class="empty">The report's markdown appears here.</div>
-            </section>
-        </main>
-
-        <script src="/context-panel.js"></script>
-        <script>
-            const $ = (id) => document.getElementById(id);
-            let source = null;
-            let runId = null;
-
-            function addActivity(agent, text, cls = "") {
-                const li = document.createElement("li");
-                li.className = cls;
-                if (agent) {
-                    const name = document.createElement("span");
-                    name.className = "agent";
-                    name.textContent = agent + " ";
-                    li.appendChild(name);
-                }
-                li.append(text);
-                $("activity").appendChild(li);
-            }
-
-            function showOutput(markdown) {
-                $("output").className = "";
-                $("output").textContent = markdown;
-            }
-
-            function finish(message) {
-                $("status").textContent = message;
-                $("run").disabled = false;
-                source.close();
-            }
-
-            $("task").addEventListener("submit", (e) => {
-                e.preventDefault();
-                if (source) source.close();
-                const params = new URLSearchParams({ question: $("question").value.trim(), url: $("url").value.trim() });
-
-                $("activity").replaceChildren();
-                $("output").className = "empty";
-                $("output").textContent = "The report's markdown appears here.";
-                $("status").textContent = "running";
-                $("run").disabled = true;
-                resetContext();
-
-                source = new EventSource("/run?" + params);
-                source.onmessage = (msg) => {
-                    const event = JSON.parse(msg.data);
-                    if (event.type === "start") runId = event.run_id;
-                    else if (event.type === "context") showContext(runId);
-                    else if (event.type === "activity") addActivity(event.agent, event.text);
-                    else if (event.type === "done") {
-                        showOutput(event.markdown);
-                        finish("done");
-                    } else if (event.type === "error") {
-                        addActivity("", event.message, "error");
-                        finish("failed");
-                    }
-                };
-                source.onerror = () => {
-                    addActivity("", "Lost the connection to the server.", "error");
-                    finish("failed");
-                };
-            });
-        </script>
-    </body>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sidewalk Psych · Data workbench</title>
+<style>
+  :root{font-family:system-ui,sans-serif;color:#18362e;background:#f4f3eb;line-height:1.55}
+  *{box-sizing:border-box}body{margin:0}main{max-width:980px;margin:auto;padding:40px 24px 80px}
+  header{border-bottom:2px solid #285f4b;padding-bottom:26px;margin-bottom:28px}
+  .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase}h1{font-family:Georgia,serif;font-size:48px;font-weight:400;margin:8px 0}
+  h2{font-size:18px;margin-top:0}p{max-width:740px}section{background:#fffef9;border:1px solid #d7ddd2;padding:24px;margin:20px 0;border-radius:8px}
+  label{display:block;font-size:14px;font-weight:600;margin:16px 0 6px}select,textarea,button{font:inherit}
+  select,textarea{width:100%;padding:12px;background:white;border:1px solid #a8b9ac;border-radius:4px}
+  textarea{min-height:105px;resize:vertical}button{background:#285f4b;color:white;padding:11px 22px;border:0;border-radius:4px;margin-top:16px;cursor:pointer}
+  button:disabled{opacity:.5;cursor:wait}.badge{display:inline-block;border:1px solid #b7a05d;background:#fff1c5;padding:5px 12px;border-radius:20px;font-size:12px}
+  pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;color:#263b31}summary{cursor:pointer}#status{font-size:14px;margin-left:12px}
+  #activity{font-size:13px}#response{white-space:pre-wrap;font-size:14px}.muted{color:#65776c;font-size:13px}
+  @media(max-width:600px){h1{font-size:36px}main{padding:24px 16px}section{padding:18px}}
+</style>
+<main>
+  <header><div class="eyebrow">Person B · Data exploration agents</div><h1>Sidewalk Psych</h1>
+    <p>A workbench for researchers studying walkability and mental health. Inspect neighborhood measures, check their limits, and test tract-level associations.</p>
+    <span id="mode" class="badge">Checking dataset…</span></header>
+  <section><h2>Run one agent</h2><p class="muted">Choose a specialist and ask a specific question. Inspect its evidence, caveats, and tool calls below.</p>
+    <form id="task"><label for="agent">Specialist</label><select id="agent">
+      <option value="built_environment">Built environment researcher · walkability, amenities, parks</option>
+      <option value="health_demographics">Health and demographics researcher · CDC + ACS</option>
+      <option value="analyst">Analyst · unadjusted and adjusted associations</option></select>
+      <label for="question">Question</label><textarea id="question" maxlength="2000">What walkability and park-access measures are available, and what are their limits?</textarea>
+      <button id="run">Explore data</button><span id="status" role="status"></span></form>
+  </section>
+  <section><h2>Findings</h2><div id="response">The selected agent's tool-supported findings will appear here.</div>
+    <ol id="activity"></ol><details><summary>Structured findings and caveats</summary><pre id="findings">No run yet.</pre></details>
+    <details><summary>Tool calls · includes agent names</summary><pre id="tools">No run yet.</pre></details></section>
+  <details><summary>Snapshot provenance and coverage</summary><pre id="metadata"></pre></details>
+  <p class="muted">Cross-sectional tract patterns cannot establish causality. Frequent mental distress is not a direct measure of loneliness or social connection. Person A owns the final report writer.</p>
+</main>
+<script src="/context-panel.js"></script>
+<script>
+  const $=id=>document.getElementById(id); let source=null,runId=null;
+  const samples={built_environment:'What walkability and park-access measures are available, and what are their limits?',health_demographics:'What do CDC frequent mental distress and ACS poverty measure in this snapshot?',analyst:'How does walkability relate to frequent mental distress before and after demographic adjustment?'};
+  $('agent').onchange=()=>{$('question').value=samples[$('agent').value]};
+  fetch('/metadata').then(r=>{if(!r.ok)throw Error('Snapshot unavailable');return r.json()}).then(m=>{
+    $('mode').textContent='REAL STUDY DATA · '+m.rows+' tracts';
+    $('metadata').textContent=JSON.stringify(m,null,2);
+  }).catch(e=>{$('mode').textContent=e.message});
+  function finish(text){$('status').textContent=text;$('run').disabled=false;if(source)source.close()}
+  $('task').onsubmit=e=>{e.preventDefault();if(source)source.close();resetContext();$('run').disabled=true;$('status').textContent='Running…';$('activity').replaceChildren();
+    const params=new URLSearchParams({question:$('question').value.trim(),agent:$('agent').value});
+    source=new EventSource('/run?'+params);
+    source.onmessage=message=>{const event=JSON.parse(message.data);
+      if(event.type==='start')runId=event.run_id;
+      if(event.type==='context')showContext(runId);
+      if(event.type==='activity'){const li=document.createElement('li');li.textContent=event.agent+': '+event.text;$('activity').appendChild(li)}
+      if(event.type==='done'){$('response').textContent=event.response;$('findings').textContent=JSON.stringify(event.result,null,2);$('tools').textContent=JSON.stringify(event.tool_calls,null,2);finish('Done')}
+      if(event.type==='error'){$('response').textContent=event.message;finish('Failed')}
+    };source.onerror=()=>finish('Connection lost');
+  };
+</script>
 </html>
