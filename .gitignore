@@ -221,4 +221,4 @@ __marimo__/
 
 # Offline downloads; curated small snapshots may be committed separately.
 data/raw/
-eval_results/
+evals/results/

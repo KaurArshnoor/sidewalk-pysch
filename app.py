@@ -15,7 +15,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
-from context_panel import AgentContexts, PanelHooks, add_context_panel
+from web.context_panel import AgentContexts, PanelHooks, add_context_panel
 from data import ROOT, Catalog, AgentDecision, AgentResult, Role, ToolCall, WorkContext
 
 load_dotenv(ROOT / ".env")
@@ -200,7 +200,7 @@ def new_session():
 
 @app.get("/")
 def index():
-    return FileResponse(ROOT / "index.html", headers={"Cache-Control": "no-cache"})
+    return FileResponse(ROOT / "web/index.html", headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/health")

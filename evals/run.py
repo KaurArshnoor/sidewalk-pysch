@@ -41,7 +41,7 @@ def deterministic(case, result, calls):
 
 async def evaluate(args):
     from agents import Agent, Runner
-    cases = json.loads((ROOT / "eval_questions.json").read_text())[:args.limit]
+    cases = json.loads((ROOT / "evals/questions.json").read_text())[:args.limit]
     output = []
     for case in cases:
         try:
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     load_dotenv(ROOT / ".env")
     p = argparse.ArgumentParser()
     p.add_argument("--dataset", type=Path, default=ROOT / "data/processed/study")
-    p.add_argument("--output", type=Path, default=ROOT / "eval_results/latest.json")
+    p.add_argument("--output", type=Path, default=ROOT / "evals/results/latest.json")
     p.add_argument("--limit", type=int, default=20)
     p.add_argument("--judge", action="store_true", help="Adds one billed rubric-judge call per sample")
     args = p.parse_args()
