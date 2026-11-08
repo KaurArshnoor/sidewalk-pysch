@@ -1,5 +1,7 @@
 # Real-study agent and no-tools comparisons
 
+These comparisons were captured against the earlier EPA–CDC–ACS core, before ParkServe and OSM enrichment. They are historical examples, not evaluation of the new environment layers. Current full-snapshot agent checks are recorded in `live-agent-checks.json`.
+
 Same model: `vertex_ai/gemini-3.5-flash-lite`. Each baseline received one user message with no supplied system prompt or tools. Baseline text is ungrounded model output, not validated research evidence. The agents read the prepared 2023-ranking core study snapshot.
 
 ## built_environment

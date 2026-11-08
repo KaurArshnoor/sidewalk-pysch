@@ -65,7 +65,42 @@
     "land_area_2023": 0,
     "boundary_land_area_change_pct": 58,
     "boundary_review_excluded": 0,
-    "pop_density": 72
+    "pop_density": 72,
+    "park_population_2020": 0,
+    "park_covered_population_2020": 0,
+    "park_served_population_2020": 0,
+    "park_population_coverage_pct": 192,
+    "park_access_pct": 6124,
+    "amenities_count": 0,
+    "amenities_per_1000": 334
   },
-  "review_status": "Documented methodology and automated checks; not independent peer review."
+  "review_status": "Documented methodology and automated checks; not independent peer review.",
+  "environment": {
+    "populated_blocks": 1246456,
+    "public_service_areas": 64482,
+    "coverage_places": 4011,
+    "osm_selected_features_in_envelopes": 109232,
+    "osm_features_assigned_to_tracts": 92159,
+    "osm_base_dates": [
+      "2026-11-08T21:31:10Z",
+      "2026-11-08T21:32:11Z",
+      "2026-11-08T21:35:18Z",
+      "2026-11-08T21:36:21Z",
+      "2026-11-08T21:38:21Z",
+      "2026-11-08T21:39:20Z",
+      "2026-11-08T21:43:33Z",
+      "2026-11-08T21:44:33Z",
+      "2026-11-08T21:45:36Z",
+      "2026-11-08T21:46:36Z",
+      "2026-11-08T21:47:36Z",
+      "2026-11-08T21:48:34Z",
+      "2026-11-08T21:49:36Z",
+      "2026-11-08T21:50:35Z",
+      "2026-11-08T21:51:36Z",
+      "2026-11-08T21:52:34Z",
+      "2026-11-08T21:53:35Z"
+    ],
+    "park_access_tracts": 23932,
+    "amenity_rate_tracts": 29722
+  }
 }

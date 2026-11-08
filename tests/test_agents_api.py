@@ -60,9 +60,9 @@ def api_app(monkeypatch):
     import app as module
     monkeypatch.setenv("SIDEWALK_DATASET", str(ROOT / "data/processed/study"))
 
-    async def stub_agent(role, question, dataset, *, hooks=None):
+    async def stub_agent(role, question, dataset, *, hooks=None, metro=None):
         # Test HTTP transport and real data access without purchasing a model call.
-        ctx = WorkContext(Catalog(dataset), role)
+        ctx = WorkContext(Catalog(dataset), role, metro=metro)
         ctx.invoke("dataset_metadata")
         ctx.invoke("profile", columns=["distress_pct"] if role == "health_demographics" else ["walkability"])
         decision = AgentDecision(finding_ids=list(ctx.findings), gaps=[], clarification=None)
@@ -119,3 +119,39 @@ async def test_web_assets_are_served_from_the_web_folder(api_app):
         assert page.status_code == 200 and "Sidewalk Psych" in page.text
         script = await client.get("/context-panel.js")
         assert script.status_code == 200 and "showContext" in script.text
+
+
+async def test_selected_metro_scopes_profile_and_validates_input(api_app):
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=api_app), base_url="http://test") as client:
+        response = await client.post("/chat", json={"message": "Summarize walkability", "agent": "built_environment", "metro": "12060"})
+        assert response.status_code == 200
+        body = response.json()
+        profile = next(f["evidence"] for f in body["result"]["findings"] if "statistics" in f["evidence"])
+        assert profile["metro_filter"] == "12060" and profile["n_metros"] == 1
+        assert profile["n_tracts"] == 1504
+        assert all(f["id"] not in body["response"] for f in body["result"]["findings"])
+        unknown = await client.post("/chat", json={"message": "Summarize walkability", "metro": "99999"})
+        assert unknown.status_code == 422
+
+
+def test_metro_scope_cannot_be_overridden_by_model():
+    catalog = Catalog(ROOT / "data/processed/study")
+    metro = "12060"
+    ctx = WorkContext(catalog, "analyst", metro=metro)
+    metadata = ctx.invoke("dataset_metadata")
+    assert metadata["analysis_scope"]["metros"] == [metro]
+    rejected = ctx.invoke("profile", columns=["walkability"], metro="other")
+    assert rejected["status"] == "error"
+    model = ctx.invoke("association", adjusted=False)
+    assert model["evidence"]["n_metros"] == 1
+    assert model["evidence"]["ci95"] is None
+    assert model["evidence"]["metro_filter"] == metro
+
+
+async def test_sse_keeps_the_selected_metro(api_app):
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=api_app), base_url="http://test") as client:
+        response = await client.get("/run", params={"question": "Summarize walkability", "agent": "built_environment", "metro": "12060"})
+        events = [json.loads(line[6:]) for line in response.text.splitlines() if line.startswith("data: ")]
+        assert events[-1]["type"] == "done"
+        profiles = [f["evidence"] for f in events[-1]["result"]["findings"] if "statistics" in f["evidence"]]
+        assert profiles and all(p["metro_filter"] == "12060" and p["n_metros"] == 1 for p in profiles)

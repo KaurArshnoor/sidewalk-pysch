@@ -28,15 +28,19 @@
     "id": "B02",
     "agent": "built_environment",
     "question": "What is the distribution of park access in the loaded data?",
-    "reference": "This layer is not loaded. Disclose the missing measure; do not manufacture a distribution.",
-    "expect_gap": true
+    "reference": "Use the study-derived park_access_pct. Explain 2020 population-weighted block-point approximation, incomplete ParkServe coverage and boundary exclusions. It is not an official TPL tract statistic.",
+    "required_columns": [
+      "park_access_pct"
+    ]
   },
   {
     "id": "B03",
     "agent": "built_environment",
     "question": "How many mapped gathering-place amenities per 1,000 residents do tracts have?",
-    "reference": "This layer is not loaded. Disclose the missing measure; do not manufacture a distribution.",
-    "expect_gap": true
+    "reference": "Use amenities_per_1000; selected OSM feature inventory with ACS population denominator. Counts are not verified unique venues or observed interaction; mapping omissions make zeros ambiguous.",
+    "required_columns": [
+      "amenities_per_1000"
+    ]
   },
   {
     "id": "B04",
@@ -114,8 +118,8 @@
     "id": "A04",
     "agent": "analyst",
     "question": "Does park access modify the tract walkability-distress association?",
-    "reference": "Park access is not loaded; state that the interaction cannot be estimated.",
-    "expect_gap": true
+    "reference": "Estimate an exploratory park_access_pct interaction with sample size, complete-case exclusions, ecological and temporal limits. Park access uses 2020 population points, not official TPL tract percentages.",
+    "moderator": "park_access_pct"
   },
   {
     "id": "A05",

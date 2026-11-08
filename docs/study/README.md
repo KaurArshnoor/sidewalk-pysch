@@ -1,6 +1,20 @@
-# Core 20-metro dataset — build and crosswalk review
+# 20-metro dataset — build and crosswalk review
 
-Built from public sources: **30,056 tracts, 20 metropolitan areas, 186 counties**. The primary adjusted model has **28,150 complete cases** after source and boundary quality checks. This is the EPA–CDC–ACS core dataset; it does not include ParkServe access, OSM amenities, direct loneliness, or direct social-connection measures.
+Built from public sources: **30,056 tracts, 20 metropolitan areas, 186 counties**. The primary adjusted model has **28,150 complete cases** after source and boundary quality checks. The EPA–CDC–ACS core is supplemented with derived ParkServe access and mapped OSM gathering places. Direct loneliness and social connection are not measured.
+
+## ParkServe and OpenStreetMap layers
+
+`scripts/build_environment.py` enriches the prepared core. `scripts/build_data.py` calls it after the core build. Raw polygons, block points, OSM responses, queries and source hashes are cached under `data/raw/study/environment/`; missing or truncated downloads fail the build.
+
+**Park access:** Retrieve TPL's published [public parks and 10-minute walk service areas](https://www.tpl.org/park-data-downloads) and its ParkServe place coverage. Retain service areas only for parks marked open access (`park_access=3`). Retrieve populated 2020 Census blocks and their internal points from the Census Bureau. For each tract, sum population whose block internal point intersects at least one service area, and divide by total 2020 block population. Overlaps count once. A primary `park_access_pct` is reported only if every populated block point is inside published ParkServe place coverage and the tract passes the existing 2020–2023 boundary review; otherwise it stays missing. `park_population_coverage_pct` records support separately. Tracts with zero 2020 population have no percentage.
+
+This is our block-point approximation, **not TPL's official tract statistic or a current-population estimate**. It assumes people live at a block's internal point and cannot measure actual park use, safety, or quality. Published place coverage does not guarantee every park is recorded. The live service has legacy date labels: recorded retrieval dates do not assert that every polygon was updated that year. TPL's [method documentation](https://parkserve.tpl.org/downloads/ParkServe_Documentation_2026.pdf) and [source terms](https://parkserve.tpl.org/downloads/ParkServe_Terms_of_Use_May_2024.pdf) apply.
+
+**Gathering places:** Retrieve OpenStreetMap nodes, ways and relations tagged `amenity=cafe`, `pub`, `library`, `community_centre`, `social_centre`, `place_of_worship`, or `marketplace` in each metro envelope. This is a documented study selection, not an exhaustive definition of public gathering places. Exclude explicit `access=no/private/members` and abandoned/disused features. Nodes use their coordinates; ways/relations use their bounding-box center. Assign points to the downloaded 2023 Census tract polygons; a boundary tie goes to the smallest tract GEOID. Deduplicate overlapping downloads by OSM element type and ID. Distinct OSM elements for the same physical venue can remain. `amenities_count` counts features; `amenities_per_1000` divides by ACS population (missing when population is unavailable or zero).
+
+Zero means no matching feature was mapped, not that no venue exists. Some venues require payment or limit participation. Counts do not establish use, social contact, or walking access. OSM base timestamps are recorded per response and differ from the older health and ACS periods. Attribution: **© OpenStreetMap contributors**, [ODbL](https://www.openstreetmap.org/copyright). Tag meanings follow the [OSM amenity documentation](https://wiki.openstreetmap.org/wiki/Key:amenity).
+
+Current enriched snapshot: **23,932 tracts with supported park-access estimates**, **92,159 mapped gathering-place features assigned to tracts**, and **29,722 tracts with a usable amenities-per-resident rate**. Park support and amenity rate availability are positive in all 20 metros; availability is not complete tract coverage. The OSM source base dates range from 2026-11-08 21:31:10 to 21:53:35 UTC. The original EPA/CDC/ACS columns and baseline analysis sample are unchanged.
 
 ## Census access
 
