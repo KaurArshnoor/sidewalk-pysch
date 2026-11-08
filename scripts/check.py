@@ -14,9 +14,9 @@ async def main():
 
     os.environ["SIDEWALK_DATASET"] = str(ROOT / "data/processed/study")
     questions = {
-        "built_environment": "Summarize EPA walkability for the full loaded 20-metro study. State its scale, coverage, and interpolation limits. Identify missing park-access data.",
+        "built_environment": "Summarize walkability, park access, and mapped gathering-place amenities for the full loaded 20-metro study. State units, available tract counts, how park access was derived, and mapping/coverage limits.",
         "health_demographics": "Summarize frequent mental distress, poverty, and household income in the full loaded 20-metro study. Distinguish modeled tract estimates from direct observations.",
-        "analyst": "Compare unadjusted and demographically adjusted walkability–frequent-mental-distress associations in the full study. Return coefficients, intervals, sample sizes, exclusions and causal/spatial caveats.",
+        "analyst": "Compare unadjusted and demographically adjusted walkability–frequent-mental-distress associations in the full study. Also fit an adjusted park_access_pct interaction. Return coefficients, intervals, sample sizes, exclusions and causal/spatial caveats.",
     }
     results = []
     async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://local") as client:
@@ -29,15 +29,30 @@ async def main():
             result = response.json()
             assert result["mode"] == "live" and result["result"]["status"] == "ok"
             assert result["result"]["findings"] and all(c["agent"] == role for c in result["tool_calls"])
+            if role == "built_environment":
+                columns = {c for f in result["result"]["findings"] for c in f["evidence"].get("statistics", {})}
+                assert {"walkability", "park_access_pct", "amenities_per_1000"} <= columns
+                assert any(s["id"] == "osm-gathering-places" for s in result["result"]["sources"])
             if role == "analyst":
                 models = [f for f in result["result"]["findings"] if "estimate" in f["evidence"]]
                 assert {f["evidence"]["adjusted"] for f in models} == {True, False}
+                assert any(f["evidence"].get("moderator") == "park_access_pct" for f in models)
                 assert all(f["evidence"]["n_metros"] == 20 for f in models)
             results.append(result)
             output = ROOT / "docs/study/live-agent-checks.json"
             output.write_text(json.dumps(results, indent=2, allow_nan=False) + "\n")
             print(f"{role}: HTTP {response.status_code}; {len(result['tool_calls'])} tools", flush=True)
-    print("All three real-study LLM checks passed", flush=True)
+        print("Checking selected-metro analysis", flush=True)
+        scoped = await client.post("/chat", json={"agent": "analyst", "metro": "12060",
+            "message": "Within this metro, compare unadjusted and adjusted walkability–mental-distress associations. What can these data establish about loneliness, social connection, and why?"})
+        scoped.raise_for_status()
+        body = scoped.json()
+        models = [f["evidence"] for f in body["result"]["findings"] if "estimate" in f["evidence"]]
+        assert {m["adjusted"] for m in models} == {True, False}
+        assert all(m["metro_filter"] == "12060" and m["n_metros"] == 1 and m["ci95"] is None for m in models)
+        results.append(body)
+        (ROOT / "docs/study/live-agent-checks.json").write_text(json.dumps(results, indent=2, allow_nan=False) + "\n")
+    print("All three agents and selected-metro LLM checks passed", flush=True)
 
 
 async def compare_baselines():

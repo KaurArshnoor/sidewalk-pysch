@@ -17,41 +17,47 @@
   @media(max-width:600px){h1{font-size:36px}main{padding:24px 16px}section{padding:18px}}
 </style>
 <main>
-  <header><div class="eyebrow">Person B · Data exploration agents</div><h1>Sidewalk Psych</h1>
+  <header><div class="eyebrow">Data exploration agents</div><h1>Sidewalk Psych</h1>
     <p>A workbench for researchers studying walkability and mental health. Inspect neighborhood measures, check their limits, and test tract-level associations.</p>
     <span id="mode" class="badge">Checking dataset…</span></header>
-  <section><h2>Run one agent</h2><p class="muted">Choose a specialist and ask a specific question. Inspect its evidence, caveats, and tool calls below.</p>
-    <form id="task"><label for="agent">Specialist</label><select id="agent">
+  <section><h2>Explore a metro area</h2><p class="muted">Choose a metro and a specialist. Analyze neighborhood patterns, then inspect the supporting evidence.</p>
+    <form id="task"><label for="metro">Metro area</label><select id="metro"><option value="">All 20 metros</option></select>
+      <p class="muted">Metro areas include the city and surrounding counties, rather than city limits.</p><label for="agent">Specialist</label><select id="agent">
       <option value="built_environment">Built environment researcher · walkability, amenities, parks</option>
       <option value="health_demographics">Health and demographics researcher · CDC + ACS</option>
-      <option value="analyst">Analyst · unadjusted and adjusted associations</option></select>
-      <label for="question">Question</label><textarea id="question" maxlength="2000">What walkability and park-access measures are available, and what are their limits?</textarea>
+      <option value="analyst" selected>Analyst · unadjusted and adjusted associations</option></select>
+      <label for="question">Question</label><textarea id="question" maxlength="2000">Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?</textarea>
       <button id="run">Explore data</button><span id="status" role="status"></span></form>
   </section>
-  <section><h2>Findings</h2><div id="response">The selected agent's tool-supported findings will appear here.</div>
-    <ol id="activity"></ol><details><summary>Structured findings and caveats</summary><pre id="findings">No run yet.</pre></details>
+  <section><h2>Findings</h2><p id="scope" class="muted"></p><div id="response">The selected agent's tool-supported findings will appear here.</div>
+    <details><summary>Tool activity and model context</summary><ol id="activity"></ol><div id="context-container"></div></details>
+    <details><summary>Sources</summary><ul id="sources"></ul></details><details><summary>Structured findings and caveats</summary><pre id="findings">No run yet.</pre></details>
     <details><summary>Tool calls · includes agent names</summary><pre id="tools">No run yet.</pre></details></section>
   <details><summary>Snapshot provenance and coverage</summary><pre id="metadata"></pre></details>
-  <p class="muted">Cross-sectional tract patterns cannot establish causality. Frequent mental distress is not a direct measure of loneliness or social connection. Person A owns the final report writer.</p>
+  <p class="muted">This workbench uses modeled frequent mental distress, rather than direct loneliness or social-connection measures. Neighborhood associations cannot establish causation. Literature-based explanations are not integrated yet.</p>
 </main>
 <script src="/context-panel.js"></script>
 <script>
   const $=id=>document.getElementById(id); let source=null,runId=null;
-  const samples={built_environment:'What walkability and park-access measures are available, and what are their limits?',health_demographics:'What do CDC frequent mental distress and ACS poverty measure in this snapshot?',analyst:'How does walkability relate to frequent mental distress before and after demographic adjustment?'};
+  $('context-container').appendChild(document.getElementById('context-panel'));
+  const traceStyle=document.createElement('style');traceStyle.textContent='body{margin-right:0}#context-panel,#context-panel.timeline{position:static;width:100%;height:auto;max-height:560px;border:0;padding:12px}details{margin:14px 0}a{color:#285f4b}';document.head.appendChild(traceStyle);
+  const samples={built_environment:'What walkability and park-access measures are available, and what are their limits?',health_demographics:'What do CDC frequent mental distress and ACS poverty measure in this snapshot?',analyst:'Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?'};
   $('agent').onchange=()=>{$('question').value=samples[$('agent').value]};
   fetch('/metadata').then(r=>{if(!r.ok)throw Error('Snapshot unavailable');return r.json()}).then(m=>{
     $('mode').textContent='REAL STUDY DATA · '+m.rows+' tracts';
     $('metadata').textContent=JSON.stringify(m,null,2);
+    for(const metro of m.scope.metro_lookup){const option=document.createElement('option');option.value=metro.metro;option.textContent=metro.name;$('metro').appendChild(option)}
   }).catch(e=>{$('mode').textContent=e.message});
   function finish(text){$('status').textContent=text;$('run').disabled=false;if(source)source.close()}
-  $('task').onsubmit=e=>{e.preventDefault();if(source)source.close();resetContext();$('run').disabled=true;$('status').textContent='Running…';$('activity').replaceChildren();
+  $('task').onsubmit=e=>{e.preventDefault();if(source)source.close();resetContext();$('run').disabled=true;$('status').textContent='Running…';$('activity').replaceChildren();$('scope').textContent=$('metro').selectedOptions[0].textContent;$('response').textContent='Analyzing the selected scope…';$('sources').replaceChildren();$('findings').textContent='Running…';$('tools').textContent='Running…';
     const params=new URLSearchParams({question:$('question').value.trim(),agent:$('agent').value});
+    if($('metro').value)params.set('metro',$('metro').value);
     source=new EventSource('/run?'+params);
     source.onmessage=message=>{const event=JSON.parse(message.data);
       if(event.type==='start')runId=event.run_id;
       if(event.type==='context')showContext(runId);
       if(event.type==='activity'){const li=document.createElement('li');li.textContent=event.agent+': '+event.text;$('activity').appendChild(li)}
-      if(event.type==='done'){$('response').textContent=event.response;$('findings').textContent=JSON.stringify(event.result,null,2);$('tools').textContent=JSON.stringify(event.tool_calls,null,2);finish('Done')}
+      if(event.type==='done'){for(const item of event.result.sources){const url=new URL(item.url);if(!['https:','http:'].includes(url.protocol))continue;const li=document.createElement('li'),link=document.createElement('a');link.href=url.href;link.textContent=item.title;link.target='_blank';link.rel='noopener noreferrer';li.appendChild(link);$('sources').appendChild(li)}$('response').textContent=event.response;$('findings').textContent=JSON.stringify(event.result,null,2);$('tools').textContent=JSON.stringify(event.tool_calls,null,2);finish('Done')}
       if(event.type==='error'){$('response').textContent=event.message;finish('Failed')}
     };source.onerror=()=>finish('Connection lost');
   };

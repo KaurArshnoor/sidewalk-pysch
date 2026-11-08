@@ -1,6 +1,6 @@
 # Sidewalk Psych
 
-Person B’s three data agents for studying walkability and mental distress. Built on the Wikipedia starter’s structure: agents, tools, and FastAPI routes in `app.py`; data access in `data.py`; the original context panel alongside the page. Person A owns literature, verification, and the final Writer.
+Three data agents for studying walkability and mental distress. Built on the Wikipedia starter’s structure: agents, tools, and FastAPI routes in `app.py`; data access in `data.py`; the original context panel alongside the page. Literature research, verification, and report writing integrate through the shared findings format.
 
 ## Run
 
@@ -25,7 +25,8 @@ uv run app.py --agent analyst --question "Compare unadjusted and adjusted walkab
 | **`data.py`** | Load the dataset, compute statistics, and attach sources/caveats to findings |
 | `web/index.html` | Frontend |
 | `web/context_panel.py`, `web/context-panel.js` | Model/tool trace panel from the starter |
-| `scripts/build_data.py` | Offline source downloads, cleaning, crosswalk, and dataset export |
+| `scripts/build_data.py` | Core source downloads, cleaning, crosswalk, and full dataset build |
+| `scripts/build_environment.py` | ParkServe service areas, Census block points, and OSM tract counts |
 | `scripts/check.py` | Check the three real agents; optionally capture no-tools baselines |
 | `evals/run.py`, `evals/questions.json` | Run the assignment’s research evaluation questions |
 | `tests/` | Calculation, data-integrity, and API tests |
@@ -45,15 +46,19 @@ docs/study/            source methods and recorded results
 
 The offline build is separate from answering questions.
 
-The built-environment agent describes EPA walkability. The health/demographics agent describes CDC and ACS measures. The analyst computes unadjusted/adjusted models and poverty interactions. All return `claim, evidence, source_ids, confidence, caveats` for the shared Writer. Numerical claims come from Python tools; the model can select only findings those tools produced.
+The built-environment agent describes EPA walkability, derived ParkServe access, and mapped OSM gathering places. The health/demographics agent describes CDC and ACS measures. The analyst computes unadjusted/adjusted models and poverty or park-access interactions. All return `claim, evidence, source_ids, confidence, caveats` for the shared Writer. Numerical claims come from Python tools; the model can select only findings those tools produced.
+
+Choose a named metro in the web form to restrict all data tools to that metro; city limits are not the unit of analysis. A selected metro shows exploratory within-metro coefficients, with confidence intervals suppressed because only one metro cluster is available. The selector is enforced in Python, rather than relying on the model to remember it. Loneliness, social connection, and explanations still require the literature findings.
 
 ## Data
 
-The only shipped dataset is **`data/processed/study`**: 30,056 tracts in the 20 largest metros by Census 2023 population, with 28,150 complete adjusted-analysis cases. It joins EPA walkability, CDC modeled mental-distress estimates, and ACS demographics.
+The only shipped dataset is **`data/processed/study`**: 30,056 tracts in the 20 largest metros by Census 2023 population, with 28,150 complete adjusted-analysis cases. It joins EPA walkability, CDC modeled mental-distress estimates, ACS demographics, derived ParkServe access, and OSM gathering-place counts.
 
 The [study notes](docs/study/README.md) explain sources, years, crosswalk weights, and quality checks. The data folder includes the main tract table, metro/county membership, coverage, crosswalk, boundary comparisons, and source/audit records.
 
-**Coverage limitation:** CDC omits Pennsylvania’s selected health outcome; Philadelphia’s available health sample covers only its non-Pennsylvania portions. Park access, OSM amenities, direct loneliness, and social connection are not loaded.
+**Coverage limitation:** CDC omits Pennsylvania’s selected health outcome; Philadelphia’s available health sample covers only its non-Pennsylvania portions. Park access remains missing where ParkServe does not cover every populated block point or the tract fails boundary review. Direct loneliness and social connection are not measured.
+
+Park access is a study-derived percentage using 2020 block population points within published 10-minute walk service areas, not an official TPL tract statistic. OSM counts selected mapped features per 1,000 ACS residents; mapping omissions, duplicate representations, and fee-based venues limit interpretation. See the study notes for definitions and source terms.
 
 Cross-sectional tract associations cannot establish causation or individual effects. CDC outcomes are modeled and share demographic inputs with ACS controls. The analyst reports missing cases and uses metro-clustered errors. Crosswalk estimates, source-year differences, and small cluster counts limit interpretation. No residual spatial diagnostic is computed because no adjacency data are loaded.
 
@@ -80,7 +85,7 @@ uv sync --extra build
 uv run python -m scripts.build_data
 ```
 
-This caches public downloads under `data/raw/study`, checks source files and geographic coverage, applies the published population crosswalk, and exports the prepared snapshot. Raw downloads are ignored by Git and Docker. The crosswalk is documented and checked in code, not independently peer reviewed.
+This caches public downloads under `data/raw/study`, checks source files and geographic coverage, applies the published population crosswalk, and exports the prepared snapshot. Raw downloads are ignored by Git and Docker. To add or rebuild just the two environment layers on an existing core snapshot, run `uv run python -m scripts.build_environment`. Both builds use the same process lock and resume cached downloads. The crosswalk is documented and checked in code, not independently peer reviewed.
 
 ## Questions to try
 
@@ -101,6 +106,6 @@ uv run python -m evals.run --judge
 
 Twenty hand-authored questions cover supported measures, missing layers, clarification, citations, and statistical limits. The runner has deterministic checks and an optional reference-based rubric judge. Results go to `evals/results/`; do not report scores until measured on the current data.
 
-Person A can import `run_agent` from `app.py` and pass `result.model_dump()` to the Writer. Each call starts a fresh context. `POST /chat` accepts `message` and `agent`; responses include `response`, agent-labeled `tool_calls`, structured `result`, and `run_id`. `/run` retains the starter’s SSE activity stream. Confirm exact Project 1 fields before final team integration.
+The report pipeline can import `run_agent` from `app.py` and pass `result.model_dump()` to the Writer. Each call starts a fresh context. `POST /chat` accepts `message`, `agent`, and an optional `metro` code; responses include `response`, agent-labeled `tool_calls`, structured `result`, and `run_id`. `/run` retains the starter’s SSE activity stream. Confirm exact Project 1 fields before final team integration.
 
 Remaining shared work: Lead fan-out/gap loop, literature/Writer/Verifier integration, combined evaluations, submission authors/URL, and Cloud Run deployment. The Dockerfile binds to `0.0.0.0:$PORT` and ships the prepared data. No deployment has been performed.

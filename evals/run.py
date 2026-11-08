@@ -1,4 +1,4 @@
-"""Run actual agents against hand-authored Person B questions. Optional independent rubric judge."""
+"""Run actual agents against hand-authored research questions. Optional independent rubric judge."""
 import argparse
 import asyncio
 import json

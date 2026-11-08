@@ -1,4 +1,4 @@
-"""Reproducible core study: 20 largest 2023 metros, ACS, CDC, EPA and a population crosswalk.
+"""Reproducible study: 20 largest 2023 metros, ACS, CDC, EPA, ParkServe and OSM.
 
 Downloads are offline build inputs. No keys, accounts, or LLMs are needed for this build.
 Raw sources are cached under data/raw/study; the small served snapshot is data/processed/study.
@@ -526,7 +526,8 @@ def build_study(root: Path):
     if catalog.frame.metro.nunique() != 20 or frame.loc[complete, "metro"].nunique() != 20:
         raise ValueError("Not all twenty metros have complete adjusted observations")
     print(json.dumps({k: audit[k] for k in ["tracts", "metros", "counties", "complete_adjusted_tracts"]}), flush=True)
-    return output
+    from scripts.build_environment import enrich_study
+    return enrich_study(root)
 
 
 def check_census():

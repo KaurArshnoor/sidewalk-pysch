@@ -69,7 +69,14 @@ class ToolCall(BaseModel):
 
 # Dataset loading and source validation
 ROOT = Path(__file__).resolve().parent
-PERCENT_COLUMNS = {"distress_pct", "poverty_pct", "age65_pct", "black_pct", "hispanic_pct", "park_access_pct"}
+PERCENT_COLUMNS = {
+    "distress_pct", "poverty_pct", "age65_pct", "black_pct", "hispanic_pct",
+    "park_access_pct", "park_population_coverage_pct",
+}
+NONNEGATIVE_COLUMNS = {
+    "population", "income", "pop_density", "amenities_per_1000", "amenities_count",
+    "park_population_2020", "park_covered_population_2020", "park_served_population_2020",
+}
 
 
 def digest(path: Path, algorithm: str = "sha256") -> str:
@@ -113,7 +120,7 @@ class Catalog:
                 raise ValueError(f"Infinite values in {col}")
             if col in PERCENT_COLUMNS and not self.frame[col].dropna().between(0, 100).all():
                 raise ValueError(f"{col} must use 0–100 percentage units")
-            if col in {"population", "income", "pop_density", "amenities_per_1000"} and (self.frame[col].dropna() < 0).any():
+            if col in NONNEGATIVE_COLUMNS and (self.frame[col].dropna() < 0).any():
                 raise ValueError(f"{col} must be nonnegative")
         if "walkability" in self.frame and not self.frame.walkability.dropna().between(1, 20).all():
             raise ValueError("walkability must lie in EPA's 1–20 range")
@@ -226,6 +233,7 @@ ASSOCIATION_CAVEATS = [
 class WorkContext:
     catalog: Catalog
     role: Role
+    metro: str | None = None
     findings: dict[str, Finding] = field(default_factory=dict)
     calls: list[ToolCall] = field(default_factory=list)
     max_calls: int = 12
@@ -246,6 +254,10 @@ class WorkContext:
             raise ValueError("Tool budget exhausted")
         start = time.perf_counter()
         try:
+            if self.metro is not None and name in {"profile", "association"}:
+                if arguments.get("metro") not in {None, self.metro}:
+                    raise ValueError("Tool request conflicts with the selected metro")
+                arguments["metro"] = self.metro
             result = self._invoke(name, **arguments)
         except (ValueError, KeyError, FileNotFoundError) as exc:
             result = {"status": "error", "reason": str(exc)}
@@ -257,15 +269,21 @@ class WorkContext:
         if name == "dataset_metadata":
             metadata = self.catalog.metadata()
             coverage = {key: metadata[key] for key in ["snapshot", "synthetic", "geography_id", "rows", "metros", "scope"]}
+            if self.metro is not None:
+                selected = next((m for m in metadata["scope"].get("metro_lookup", []) if m["metro"] == self.metro), {})
+                coverage.update(rows=len(self.catalog.subset(self.metro)), metros=[self.metro],
+                    scope={"description": "Selected metro: " + selected.get("name", self.metro), "metro_count": 1})
+            metadata["analysis_scope"] = coverage
             metadata["coverage_finding"] = self.finding(
-                f"This snapshot contains {metadata['rows']} tracts across {len(metadata['metros'])} metro labels "
-                f"on {metadata['geography_id']} boundaries. Scope: {metadata['scope'].get('description', 'not documented')}.",
+                f"This analysis contains {coverage['rows']} tracts across {len(coverage['metros'])} metro areas "
+                f"on {coverage['geography_id']} boundaries. Scope: {coverage['scope'].get('description', 'not documented')}.",
                 coverage, list(self.catalog.manifest["column_sources"]),
                 ["Coverage describes the loaded snapshot; it does not independently verify a top-20 metro universe."],
             )
             return metadata
         if name == "profile":
-            allowed = {"built_environment": {"walkability", "amenities_per_1000", "park_access_pct"},
+            allowed = {"built_environment": {"walkability", "amenities_per_1000", "amenities_count",
+                                              "park_access_pct", "park_population_coverage_pct"},
                        "health_demographics": {"distress_pct", "population", "poverty_pct", "income", "age65_pct", "black_pct", "hispanic_pct"},
                        "analyst": set(self.catalog.frame.columns) - {"geoid", "metro"}}[self.role]
             columns = arguments["columns"]
@@ -295,6 +313,7 @@ class WorkContext:
             result = association(d, arguments.get("adjusted", True), arguments.get("moderator"))
             if result["status"] != "ok":
                 return result
+            result["metro_filter"] = arguments.get("metro")
             result["residual_spatial_diagnostic"] = {"status": "not_run", "reason": "No tract adjacency file loaded"}
             modifier = arguments.get("moderator")
             units = "percentage points of frequent mental distress per 1-point walkability increase"
