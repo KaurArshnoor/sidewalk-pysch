@@ -373,10 +373,15 @@ class LiteratureContext:
         evidence_text = " ".join([paper.title, paper.abstract] + paper.publication_types)
         if pattern and not pattern.search(evidence_text):
             raise ValueError(f"The abstract does not describe a {DESIGN_LABEL[design]} design; choose the design it states")
+        # The sample size is usually in a methods sentence, not the result sentence being quoted, so n is checked
+        # against the whole abstract. The effect and its interval must be in the quote: the quote is their evidence.
+        if n is not None and not _in_quote(n, [abs(v) for _, v in numbers_in(_clean(paper.abstract))]):
+            raise ValueError(f"n={n} does not appear in this paper's abstract; omit n and record the study without it")
         numbers = [abs(v) for _, v in numbers_in(quote)]
-        for label, value in [("n", n), ("effect_value", effect_value), ("ci_low", ci_low), ("ci_high", ci_high)]:
+        for label, value in [("effect_value", effect_value), ("ci_low", ci_low), ("ci_high", ci_high)]:
             if value is not None and not _in_quote(value, numbers):
-                raise ValueError(f"{label}={value} does not appear in the quote; quote the sentence that reports it")
+                raise ValueError(f"{label}={value} does not appear in the quote; quote the sentence that reports it, "
+                                 "or record the study without the effect")
         if effect_value is not None and not effect_metric:
             raise ValueError("effect_metric is required with effect_value (for example OR, beta, r)")
         if (ci_low is None) != (ci_high is None) or (ci_low is not None and effect_value is None):

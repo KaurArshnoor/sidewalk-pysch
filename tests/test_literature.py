@@ -134,7 +134,8 @@ async def test_record_study_rejects_unchecked_extractions(ctx):
     cases = {
         "Unknown paper_id": dict(base, paper_id="doi:10.9999/invented"),
         "copied exactly": dict(base, quote=sentence.replace(" ", "  ") + " This was not in the abstract."),
-        "does not appear in the quote": dict(base, n=n + 1),
+        "does not appear in this paper's abstract": dict(base, n=987_654_321),
+        "does not appear in the quote": dict(base, effect_metric="OR", effect_value=0.123456),
         "effect_metric is required": dict(base, effect_value=float(n)),
         "exposure and outcome": dict(base, outcome="  "),
     }
@@ -146,6 +147,18 @@ async def test_record_study_rejects_unchecked_extractions(ctx):
     result = await ctx.invoke("record_study", **claim_rct)
     assert "does not describe a randomized trial" in result["reason"]
     assert ctx.findings == {}
+
+
+async def test_sample_size_may_come_from_another_abstract_sentence(ctx):
+    """Live run: studies were rejected because n was in the methods sentence, not the quoted result."""
+    paper, sentence, n = with_number(ctx)
+    others = [s for s in re.split(r"(?<=\.)\s+", paper.abstract)
+              if s != sentence and len(s) >= 40 and str(n) not in s.replace(",", "")]
+    assert others, "fixture abstract needs a second sentence without n"
+    finding = await ctx.invoke("record_study", paper_id=paper.id, design="cross_sectional", quote=others[0],
+                               exposure="neighborhood walkability", outcome="depressive symptoms", n=n)
+    assert finding.get("status") != "error", finding
+    assert StudyEvidence.model_validate(finding["evidence"]).n == n
 
 
 async def test_paper_id_may_be_a_bare_doi_or_pmid(ctx):
