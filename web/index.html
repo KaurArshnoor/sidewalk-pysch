@@ -26,7 +26,8 @@
       <option value="built_environment">Built environment researcher · walkability, amenities, parks</option>
       <option value="health_demographics">Health and demographics researcher · CDC + ACS</option>
       <option value="analyst" selected>Analyst · unadjusted and adjusted associations</option>
-      <option value="literature">Literature researcher · PubMed, OpenAlex, PsyArXiv (metro not used)</option></select>
+      <option value="literature">Literature researcher · PubMed, OpenAlex, PsyArXiv (metro not used)</option>
+      <option value="study">Full study · plans, runs the agents, compares literature and data, writes a verified report</option></select>
       <label for="question">Question</label><textarea id="question" maxlength="2000">Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?</textarea>
       <button id="run">Explore data</button><span id="status" role="status"></span></form>
   </section>
@@ -42,7 +43,12 @@
   const $=id=>document.getElementById(id); let source=null,runId=null;
   $('context-container').appendChild(document.getElementById('context-panel'));
   const traceStyle=document.createElement('style');traceStyle.textContent='body{margin-right:0}#context-panel,#context-panel.timeline{position:static;width:100%;height:auto;max-height:560px;border:0;padding:12px}details{margin:14px 0}a{color:#285f4b}';document.head.appendChild(traceStyle);
-  const samples={built_environment:'What walkability and park-access measures are available, and what are their limits?',health_demographics:'What do CDC frequent mental distress and ACS poverty measure in this snapshot?',analyst:'Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?',literature:'What does published research report about neighborhood walkability and loneliness or depression? Include study designs and sample sizes.'};
+  const samples={built_environment:'What walkability and park-access measures are available, and what are their limits?',health_demographics:'What do CDC frequent mental distress and ACS poverty measure in this snapshot?',analyst:'Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?',literature:'What does published research report about neighborhood walkability and loneliness or depression? Include study designs and sample sizes.',study:'Are more walkable neighborhoods associated with lower frequent mental distress after adjustment, and how does that compare with published research on walkability, depression and loneliness?'};
+  function addSources(items){for(const item of items){const url=new URL(item.url);if(!['https:','http:'].includes(url.protocol))continue;const li=document.createElement('li'),link=document.createElement('a');link.href=url.href;link.textContent=item.title;link.target='_blank';link.rel='noopener noreferrer';li.appendChild(link);$('sources').appendChild(li)}}
+  function showStudy(event){const seen=new Set(),sources=[];for(const r of event.results)for(const s of r.sources)if(!seen.has(s.id)){seen.add(s.id);sources.push(s)}addSources(sources);
+    const plan=event.agents.map(a=>`- ${a.role}: ${a.status}${a.error?' ('+a.error+')':` (${a.findings} findings)`} · ${a.sub_question}`).join('\n');
+    $('response').textContent=(event.report?event.report.markdown:event.clarification)+(plan?'\n\n---\nPlan\n'+plan:'');
+    $('findings').textContent=JSON.stringify(event.results,null,2);$('tools').textContent=JSON.stringify({plan:event.plan,notes:event.plan_notes,agents:event.agents},null,2)}
   $('agent').onchange=()=>{$('question').value=samples[$('agent').value]};
   fetch('/metadata').then(r=>{if(!r.ok)throw Error('Snapshot unavailable');return r.json()}).then(m=>{
     $('mode').textContent='REAL STUDY DATA · '+m.rows+' tracts';
@@ -51,14 +57,16 @@
   }).catch(e=>{$('mode').textContent=e.message});
   function finish(text){$('status').textContent=text;$('run').disabled=false;if(source)source.close()}
   $('task').onsubmit=e=>{e.preventDefault();if(source)source.close();resetContext();$('run').disabled=true;$('status').textContent='Running…';$('activity').replaceChildren();$('scope').textContent=$('metro').selectedOptions[0].textContent;$('response').textContent='Analyzing the selected scope…';$('sources').replaceChildren();$('findings').textContent='Running…';$('tools').textContent='Running…';
-    const params=new URLSearchParams({question:$('question').value.trim(),agent:$('agent').value});
+    const study=$('agent').value==='study',params=new URLSearchParams({question:$('question').value.trim()});
+    if(!study)params.set('agent',$('agent').value);
     if($('metro').value)params.set('metro',$('metro').value);
-    source=new EventSource('/run?'+params);
+    source=new EventSource((study?'/study/run?':'/run?')+params);
     source.onmessage=message=>{const event=JSON.parse(message.data);
       if(event.type==='start')runId=event.run_id;
       if(event.type==='context')showContext(runId);
       if(event.type==='activity'){const li=document.createElement('li');li.textContent=event.agent+': '+event.text;$('activity').appendChild(li)}
-      if(event.type==='done'){for(const item of event.result.sources){const url=new URL(item.url);if(!['https:','http:'].includes(url.protocol))continue;const li=document.createElement('li'),link=document.createElement('a');link.href=url.href;link.textContent=item.title;link.target='_blank';link.rel='noopener noreferrer';li.appendChild(link);$('sources').appendChild(li)}$('response').textContent=event.response;$('findings').textContent=JSON.stringify(event.result,null,2);$('tools').textContent=JSON.stringify(event.tool_calls,null,2);finish('Done')}
+      if(event.type==='done'&&study){showStudy(event);finish('Done');return}
+      if(event.type==='done'){addSources(event.result.sources);$('response').textContent=event.response;$('findings').textContent=JSON.stringify(event.result,null,2);$('tools').textContent=JSON.stringify(event.tool_calls,null,2);finish('Done')}
       if(event.type==='error'){$('response').textContent=event.message;finish('Failed')}
     };source.onerror=()=>finish('Connection lost');
   };

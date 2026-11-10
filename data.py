@@ -16,7 +16,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 # Shared findings format
 DataRole = Literal["built_environment", "health_demographics", "analyst"]  # agents that run on the dataset
-Role = Literal[DataRole, "literature"]  # every agent that produces findings
+Role = Literal[DataRole, "literature"]  # research agents a user or the planner can run
+Producer = Literal[Role, "reconciler"]  # everything that produces findings; reconciler = literature–data comparisons
 
 
 class Source(BaseModel):
@@ -84,7 +85,7 @@ class Finding(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
     id: str
-    agent: Role
+    agent: Producer
     claim: str
     evidence: dict
     source_ids: list[str]
@@ -101,7 +102,7 @@ class AgentDecision(BaseModel):
 
 
 class AgentResult(BaseModel):
-    agent: Role
+    agent: Producer
     question: str
     status: Literal["ok", "needs_clarification", "insufficient"]
     findings: list[Finding]

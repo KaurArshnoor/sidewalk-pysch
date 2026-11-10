@@ -45,7 +45,7 @@ CEILING: dict[str, Hedge] = {  # strongest wording each finding confidence allow
 }
 CAUSAL = re.compile(r"\b(causes?|caused|causal(?:ly)?|leads? to|led to|improves?|improved|reduces?|reduced|"
                     r"effects? of|because of|results? in|resulted in|drives?)\b", re.IGNORECASE)
-UNCITED_OK = {"Question", "Where they agree or disagree"}  # framing and comparison sentences
+UNCITED_OK = {"Question"}  # framing only; comparisons must cite reconciler findings
 UNKNOWN = "cites findings you were not given"
 PROVENANCE = "Raw file SHA256s:"  # checksum source notes: kept on findings, not useful to the Writer
 
@@ -83,8 +83,10 @@ def check_report_items(report: Report, findings: dict[str, Finding]) -> list[tup
                 problems.append((si, i, "causal wording about tract-level data associations"))
             if section.heading == "What the literature says" and any(f.agent != "literature" for f in cited):
                 problems.append((si, i, "the literature section cites a data finding"))
-            if section.heading == "What our data show" and any(f.agent == "literature" for f in cited):
-                problems.append((si, i, "the data section cites a literature finding"))
+            if section.heading == "What our data show" and any(f.agent in {"literature", "reconciler"} for f in cited):
+                problems.append((si, i, "the data section cites a literature or comparison finding"))
+            if section.heading == "Where they agree or disagree" and any(f.agent != "reconciler" for f in cited):
+                problems.append((si, i, "the agree/disagree section cites only comparison (reconciler) findings"))
     return problems
 
 
@@ -95,7 +97,8 @@ def check_report(report: Report, findings: dict[str, Finding]) -> list[str]:
 
 def writer_prompt(question: str, results: list[AgentResult], feedback: list[str] | None = None) -> str:
     findings, _, gaps = pool(results)
-    items = [{"id": f.id, "agent": f.agent, "claim": f.claim, "confidence": f.confidence}
+    items = [{"id": f.id, "agent": f.agent, "claim": f.claim, "confidence": f.confidence,
+              **({"verdict": f.evidence["verdict"]} if f.agent == "reconciler" else {})}
              for f in findings.values()]
     caveats: dict[str, list[str]] = {}  # caveats repeat across findings; list each once
     for f in findings.values():
@@ -107,6 +110,8 @@ def writer_prompt(question: str, results: list[AgentResult], feedback: list[str]
             f"{json.dumps([{'caveat': c, 'finding_ids': ids} for c, ids in caveats.items()], indent=1)}")
     if not any(f.agent == "literature" for f in findings.values()):
         text += "\n\nNo literature findings were provided."
+    if not any(f.agent == "reconciler" for f in findings.values()):
+        text += "\n\nNo comparison findings were provided; omit the agree/disagree section."
     if gaps:
         text += ("\n\nKnown gaps (already listed under Open gaps; do not repeat them in Report.gaps):\n"
                  + "\n".join(f"- {g}" for g in gaps))

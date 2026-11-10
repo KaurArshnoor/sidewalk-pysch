@@ -17,11 +17,18 @@ To run one agent directly:
 uv run app.py --agent analyst --question "Compare unadjusted and adjusted walkability–mental-distress associations."
 ```
 
+To run a full study (planner → agents in parallel → literature–data reconciliation → Writer ↔ Verifier), use `--agent study`, or choose **Full study** on the page. Each run is saved to `runs/<run_id>.json`.
+
+```sh
+uv run app.py --agent study --question "Is walkability linked to lower mental distress, and how does that compare with research on walkability and depression?"
+```
+
 ## Read the code
 
 | File | Purpose |
 |---|---|
-| **`app.py`** | All agents (three data agents, literature researcher, Writer, Verifier), their tool wrappers, research runs, and web routes |
+| **`app.py`** | All agents (three data agents, literature researcher, planner, Writer, Verifier), their tool wrappers, the `orchestrate()` pipeline, and web routes |
+| `orchestrate.py` | Plan checks (required roles, one task per role) and literature–data reconciliation verdicts |
 | **`data.py`** | Load the dataset, compute statistics, and attach sources/caveats to findings; shared findings types |
 | `literature.py` | Literature search (PubMed, OpenAlex, PsyArXiv), query expansion, extraction checks, evidence-strength rubric |
 | `report.py` | Writer report format, wording/citation checks, Markdown rendering |
