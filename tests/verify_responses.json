@@ -1,0 +1,1279 @@
+{
+ "https://api.crossref.org/works/10.1016/S0140-6736(97)11096-0": {
+  "json": {
+   "message": {
+    "DOI": "10.1016/s0140-6736(97)11096-0",
+    "ISSN": [
+     "0140-6736"
+    ],
+    "URL": "https://doi.org/10.1016/s0140-6736(97)11096-0",
+    "alternative-id": [
+     "S0140673697110960"
+    ],
+    "author": [
+     {
+      "affiliation": [],
+      "family": "Wakefield",
+      "given": "AJ",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "first"
+     },
+     {
+      "affiliation": [],
+      "family": "Murch",
+      "given": "SH",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Anthony",
+      "given": "A",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Linnell",
+      "given": "J",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Casson",
+      "given": "DM",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Malik",
+      "given": "M",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Berelowitz",
+      "given": "M",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Dhillon",
+      "given": "AP",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Thomson",
+      "given": "MA",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Harvey",
+      "given": "P",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Valentine",
+      "given": "A",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Davies",
+      "given": "SE",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Walker-Smith",
+      "given": "JA",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     }
+    ],
+    "container-title": [
+     "The Lancet"
+    ],
+    "content-domain": {
+     "crossmark-restriction": false,
+     "domain": []
+    },
+    "created": {
+     "date-parts": [
+      [
+       2002,
+       7,
+       25
+      ]
+     ],
+     "date-time": "2002-07-25T12:19:56Z",
+     "timestamp": 1027599596000
+    },
+    "deposited": {
+     "date-parts": [
+      [
+       2019,
+       5,
+       1
+      ]
+     ],
+     "date-time": "2019-05-01T12:43:25Z",
+     "timestamp": 1556714605000
+    },
+    "indexed": {
+     "date-parts": [
+      [
+       2026,
+       11,
+       6
+      ]
+     ],
+     "date-time": "2026-11-06T19:25:59Z",
+     "timestamp": 1793993159517,
+     "version": "4.8.0"
+    },
+    "is-referenced-by-count": 2048,
+    "issn-type": [
+     {
+      "type": "print",
+      "value": "0140-6736"
+     }
+    ],
+    "issue": "9103",
+    "issued": {
+     "date-parts": [
+      [
+       1998,
+       2
+      ]
+     ]
+    },
+    "journal-issue": {
+     "issue": "9103",
+     "published-print": {
+      "date-parts": [
+       [
+        1998,
+        2
+       ]
+      ]
+     }
+    },
+    "language": "en",
+    "license": [
+     {
+      "URL": "https://www.elsevier.com/tdm/userlicense/1.0/",
+      "content-version": "tdm",
+      "delay-in-days": 0,
+      "start": {
+       "date-parts": [
+        [
+         1998,
+         2,
+         1
+        ]
+       ],
+       "date-time": "1998-02-01T00:00:00Z",
+       "timestamp": 886291200000
+      }
+     }
+    ],
+    "link": [
+     {
+      "URL": "https://api.elsevier.com/content/article/PII:S0140673697110960?httpAccept=text/xml",
+      "content-type": "text/xml",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+     },
+     {
+      "URL": "https://api.elsevier.com/content/article/PII:S0140673697110960?httpAccept=text/plain",
+      "content-type": "text/plain",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+     }
+    ],
+    "member": "78",
+    "original-title": [],
+    "page": "637-641",
+    "prefix": "10.1016",
+    "published": {
+     "date-parts": [
+      [
+       1998,
+       2
+      ]
+     ]
+    },
+    "published-print": {
+     "date-parts": [
+      [
+       1998,
+       2
+      ]
+     ]
+    },
+    "publisher": "Elsevier BV",
+    "reference-count": 26,
+    "references-count": 26,
+    "relation": {},
+    "resource": {
+     "primary": {
+      "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0140673697110960"
+     }
+    },
+    "score": 1,
+    "short-container-title": [
+     "The Lancet"
+    ],
+    "short-title": [],
+    "source": "Crossref",
+    "subject": [],
+    "subtitle": [],
+    "title": [
+     "RETRACTED: Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children"
+    ],
+    "type": "journal-article",
+    "updated-by": [
+     {
+      "DOI": "10.1016/s0140-6736(04)15715-2",
+      "label": "Correction",
+      "record-id": "17269",
+      "source": "retraction-watch",
+      "type": "correction",
+      "updated": {
+       "date-parts": [
+        [
+         2004,
+         3,
+         6
+        ]
+       ],
+       "date-time": "2004-03-06T00:00:00Z",
+       "timestamp": 1078531200000
+      }
+     },
+     {
+      "DOI": "10.1016/s0140-6736(10)60175-4",
+      "label": "Retraction",
+      "record-id": "4036",
+      "source": "retraction-watch",
+      "type": "retraction",
+      "updated": {
+       "date-parts": [
+        [
+         2010,
+         2,
+         6
+        ]
+       ],
+       "date-time": "2010-02-06T00:00:00Z",
+       "timestamp": 1265414400000
+      }
+     }
+    ],
+    "volume": "351"
+   },
+   "message-type": "work",
+   "message-version": "1.0.0",
+   "status": "ok"
+  },
+  "status": 200,
+  "text": null
+ },
+ "https://api.crossref.org/works/10.1016/j.ypmed.2018.08.008": {
+  "json": {
+   "message": {
+    "DOI": "10.1016/j.ypmed.2018.08.008",
+    "ISSN": [
+     "0091-7435"
+    ],
+    "URL": "https://doi.org/10.1016/j.ypmed.2018.08.008",
+    "alternative-id": [
+     "S0091743518302391"
+    ],
+    "assertion": [
+     {
+      "label": "This article is maintained by",
+      "name": "publisher",
+      "value": "Elsevier"
+     },
+     {
+      "label": "Article Title",
+      "name": "articletitle",
+      "value": "Neighborhood walkability and physical activity among older women: Tests of mediation by environmental perceptions and moderation by depressive symptoms"
+     },
+     {
+      "label": "Journal Title",
+      "name": "journaltitle",
+      "value": "Preventive Medicine"
+     },
+     {
+      "label": "CrossRef DOI link to publisher maintained version",
+      "name": "articlelink",
+      "value": "https://doi.org/10.1016/j.ypmed.2018.08.008"
+     },
+     {
+      "label": "Content Type",
+      "name": "content_type",
+      "value": "article"
+     },
+     {
+      "label": "Copyright",
+      "name": "copyright",
+      "value": "\u00a9 2018 Elsevier Inc. All rights reserved."
+     }
+    ],
+    "author": [
+     {
+      "affiliation": [],
+      "family": "Orstad",
+      "given": "Stephanie L.",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "first"
+     },
+     {
+      "affiliation": [],
+      "family": "McDonough",
+      "given": "Meghan H.",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "James",
+      "given": "Peter",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Klenosky",
+      "given": "David B.",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Laden",
+      "given": "Francine",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Mattson",
+      "given": "Marifran",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     },
+     {
+      "affiliation": [],
+      "family": "Troped",
+      "given": "Philip J.",
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ],
+      "sequence": "additional"
+     }
+    ],
+    "container-title": [
+     "Preventive Medicine"
+    ],
+    "content-domain": {
+     "crossmark-restriction": true,
+     "domain": [
+      "clinicalkey.com",
+      "clinicalkey.com.au",
+      "clinicalkey.es",
+      "clinicalkey.fr",
+      "clinicalkey.jp",
+      "elsevier.com",
+      "sciencedirect.com"
+     ]
+    },
+    "created": {
+     "date-parts": [
+      [
+       2018,
+       8,
+       6
+      ]
+     ],
+     "date-time": "2018-08-06T12:18:32Z",
+     "timestamp": 1533557912000
+    },
+    "deposited": {
+     "date-parts": [
+      [
+       2025,
+       9,
+       25
+      ]
+     ],
+     "date-time": "2025-09-25T10:01:05Z",
+     "timestamp": 1758794465000
+    },
+    "funder": [
+     {
+      "DOI": "10.13039/100000002",
+      "award": [
+       "R00 CA201542"
+      ],
+      "award-info": [
+       {
+        "award-number": [
+         "R00 CA201542"
+        ]
+       }
+      ],
+      "doi-asserted-by": "publisher",
+      "id": [
+       {
+        "asserted-by": "publisher",
+        "id": "10.13039/100000002",
+        "id-type": "DOI"
+       }
+      ],
+      "name": "National Institutes of Health"
+     },
+     {
+      "DOI": "10.13039/100000002",
+      "award": [
+       "R01 ES017017"
+      ],
+      "award-info": [
+       {
+        "award-number": [
+         "R01 ES017017"
+        ]
+       }
+      ],
+      "doi-asserted-by": "publisher",
+      "id": [
+       {
+        "asserted-by": "publisher",
+        "id": "10.13039/100000002",
+        "id-type": "DOI"
+       }
+      ],
+      "name": "National Institutes of Health"
+     },
+     {
+      "DOI": "10.13039/100000002",
+      "award": [
+       "UM1 CA186107"
+      ],
+      "award-info": [
+       {
+        "award-number": [
+         "UM1 CA186107"
+        ]
+       }
+      ],
+      "doi-asserted-by": "publisher",
+      "id": [
+       {
+        "asserted-by": "publisher",
+        "id": "10.13039/100000002",
+        "id-type": "DOI"
+       }
+      ],
+      "name": "National Institutes of Health"
+     },
+     {
+      "name": "Brigham and Women's Hospital and Harvard Medical School"
+     },
+     {
+      "DOI": "10.13039/100012005",
+      "doi-asserted-by": "publisher",
+      "id": [
+       {
+        "asserted-by": "publisher",
+        "id": "10.13039/100012005",
+        "id-type": "DOI"
+       }
+      ],
+      "name": "University of Massachusetts Boston"
+     }
+    ],
+    "indexed": {
+     "date-parts": [
+      [
+       2026,
+       8,
+       17
+      ]
+     ],
+     "date-time": "2026-08-17T20:26:50Z",
+     "timestamp": 1786998410938,
+     "version": "build-2736575974"
+    },
+    "is-referenced-by-count": 41,
+    "issn-type": [
+     {
+      "type": "print",
+      "value": "0091-7435"
+     }
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2018,
+       11
+      ]
+     ]
+    },
+    "language": "en",
+    "license": [
+     {
+      "URL": "https://www.elsevier.com/tdm/userlicense/1.0/",
+      "content-version": "tdm",
+      "delay-in-days": 0,
+      "start": {
+       "date-parts": [
+        [
+         2018,
+         11,
+         1
+        ]
+       ],
+       "date-time": "2018-11-01T00:00:00Z",
+       "timestamp": 1541030400000
+      }
+     },
+     {
+      "URL": "https://www.elsevier.com/legal/tdmrep-license",
+      "content-version": "tdm",
+      "delay-in-days": 0,
+      "start": {
+       "date-parts": [
+        [
+         2018,
+         11,
+         1
+        ]
+       ],
+       "date-time": "2018-11-01T00:00:00Z",
+       "timestamp": 1541030400000
+      }
+     },
+     {
+      "URL": "http://www.elsevier.com/open-access/userlicense/1.0/",
+      "content-version": "am",
+      "delay-in-days": 311,
+      "start": {
+       "date-parts": [
+        [
+         2019,
+         9,
+         8
+        ]
+       ],
+       "date-time": "2019-09-08T00:00:00Z",
+       "timestamp": 1567900800000
+      }
+     }
+    ],
+    "link": [
+     {
+      "URL": "https://api.elsevier.com/content/article/PII:S0091743518302391?httpAccept=text/xml",
+      "content-type": "text/xml",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+     },
+     {
+      "URL": "https://api.elsevier.com/content/article/PII:S0091743518302391?httpAccept=text/plain",
+      "content-type": "text/plain",
+      "content-version": "vor",
+      "intended-application": "text-mining"
+     }
+    ],
+    "member": "78",
+    "original-title": [],
+    "page": "60-67",
+    "prefix": "10.1016",
+    "published": {
+     "date-parts": [
+      [
+       2018,
+       11
+      ]
+     ]
+    },
+    "published-print": {
+     "date-parts": [
+      [
+       2018,
+       11
+      ]
+     ]
+    },
+    "publisher": "Elsevier BV",
+    "reference-count": 90,
+    "references-count": 90,
+    "relation": {},
+    "resource": {
+     "primary": {
+      "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0091743518302391"
+     }
+    },
+    "score": 1,
+    "short-container-title": [
+     "Preventive Medicine"
+    ],
+    "short-title": [],
+    "source": "Crossref",
+    "special_numbering": "C",
+    "subject": [],
+    "subtitle": [],
+    "title": [
+     "Neighborhood walkability and physical activity among older women: Tests of mediation by environmental perceptions and moderation by depressive symptoms"
+    ],
+    "type": "journal-article",
+    "update-policy": "https://doi.org/10.1016/elsevier_cm_policy",
+    "volume": "116"
+   },
+   "message-type": "work",
+   "message-version": "1.0.0",
+   "status": "ok"
+  },
+  "status": 200,
+  "text": null
+ },
+ "https://api.crossref.org/works/10.9999/sidewalk-psych-does-not-exist": {
+  "json": null,
+  "status": 404,
+  "text": "Resource not found."
+ },
+ "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=30092314&retmode=json": {
+  "json": {
+   "header": {
+    "type": "esummary",
+    "version": "0.3"
+   },
+   "result": {
+    "30092314": {
+     "articleids": [
+      {
+       "idtype": "pubmed",
+       "idtypen": 1,
+       "value": "30092314"
+      },
+      {
+       "idtype": "mid",
+       "idtypen": 8,
+       "value": "NIHMS1506185"
+      },
+      {
+       "idtype": "pmc",
+       "idtypen": 8,
+       "value": "PMC6260982"
+      },
+      {
+       "idtype": "pmcid",
+       "idtypen": 5,
+       "value": "pmc-id: PMC6260982;manuscript-id: NIHMS1506185;"
+      },
+      {
+       "idtype": "doi",
+       "idtypen": 3,
+       "value": "10.1016/j.ypmed.2018.08.008"
+      },
+      {
+       "idtype": "pii",
+       "idtypen": 4,
+       "value": "S0091-7435(18)30239-1"
+      }
+     ],
+     "attributes": [
+      "Has Abstract"
+     ],
+     "authors": [
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Orstad SL"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "McDonough MH"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "James P"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Klenosky DB"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Laden F"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Mattson M"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Troped PJ"
+      }
+     ],
+     "availablefromurl": "",
+     "bookname": "",
+     "booktitle": "",
+     "chapter": "",
+     "doccontriblist": [],
+     "docdate": "",
+     "doctype": "citation",
+     "edition": "",
+     "elocationid": "doi: 10.1016/j.ypmed.2018.08.008",
+     "epubdate": "2018 Aug 6",
+     "essn": "1096-0260",
+     "fulljournalname": "Preventive medicine",
+     "history": [
+      {
+       "date": "2018/03/26 00:00",
+       "pubstatus": "received"
+      },
+      {
+       "date": "2018/07/06 00:00",
+       "pubstatus": "revised"
+      },
+      {
+       "date": "2018/08/04 00:00",
+       "pubstatus": "accepted"
+      },
+      {
+       "date": "2018/08/10 06:00",
+       "pubstatus": "pubmed"
+      },
+      {
+       "date": "2019/07/10 06:00",
+       "pubstatus": "medline"
+      },
+      {
+       "date": "2018/08/10 06:00",
+       "pubstatus": "entrez"
+      },
+      {
+       "date": "2019/11/01 00:00",
+       "pubstatus": "pmc-release"
+      }
+     ],
+     "issn": "0091-7435",
+     "issue": "",
+     "lang": [
+      "eng"
+     ],
+     "lastauthor": "Troped PJ",
+     "locationlabel": "",
+     "medium": "",
+     "nlmuniqueid": "0322116",
+     "pages": "60-67",
+     "pmcrefcount": 90,
+     "pubdate": "2018 Nov",
+     "publisherlocation": "",
+     "publishername": "",
+     "pubstatus": "256",
+     "pubtype": [
+      "Journal Article",
+      "Research Support, N.I.H., Extramural",
+      "Research Support, Non-U.S. Gov't"
+     ],
+     "recordstatus": "PubMed - indexed for MEDLINE",
+     "references": [],
+     "reportnumber": "",
+     "sortfirstauthor": "Orstad SL",
+     "sortpubdate": "2018/11/01 00:00",
+     "sorttitle": "neighborhood walkability and physical activity among older women tests of mediation by environmental perceptions and moderation by depressive symptoms",
+     "source": "Prev Med",
+     "srccontriblist": [],
+     "srcdate": "",
+     "title": "Neighborhood walkability and physical activity among older women: Tests of mediation by environmental perceptions and moderation by depressive symptoms.",
+     "uid": "30092314",
+     "vernaculartitle": "",
+     "volume": "116"
+    },
+    "uids": [
+     "30092314"
+    ]
+   }
+  },
+  "status": 200,
+  "text": null
+ },
+ "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=9500320&retmode=json": {
+  "json": {
+   "header": {
+    "type": "esummary",
+    "version": "0.3"
+   },
+   "result": {
+    "9500320": {
+     "articleids": [
+      {
+       "idtype": "pubmed",
+       "idtypen": 1,
+       "value": "9500320"
+      },
+      {
+       "idtype": "doi",
+       "idtypen": 3,
+       "value": "10.1016/s0140-6736(97)11096-0"
+      },
+      {
+       "idtype": "pii",
+       "idtypen": 4,
+       "value": "S0140673697110960"
+      }
+     ],
+     "attributes": [
+      "Has Abstract"
+     ],
+     "authors": [
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Wakefield AJ"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Murch SH"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Anthony A"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Linnell J"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Casson DM"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Malik M"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Berelowitz M"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Dhillon AP"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Thomson MA"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Harvey P"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Valentine A"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Davies SE"
+      },
+      {
+       "authtype": "Author",
+       "clusterid": "",
+       "name": "Walker-Smith JA"
+      }
+     ],
+     "availablefromurl": "",
+     "bookname": "",
+     "booktitle": "",
+     "chapter": "",
+     "doccontriblist": [],
+     "docdate": "",
+     "doctype": "citation",
+     "edition": "",
+     "elocationid": "",
+     "epubdate": "",
+     "essn": "",
+     "fulljournalname": "Lancet (London, England)",
+     "history": [
+      {
+       "date": "1998/03/21 00:00",
+       "pubstatus": "pubmed"
+      },
+      {
+       "date": "1998/03/21 00:01",
+       "pubstatus": "medline"
+      },
+      {
+       "date": "1998/03/21 00:00",
+       "pubstatus": "entrez"
+      }
+     ],
+     "issn": "0140-6736",
+     "issue": "9103",
+     "lang": [
+      "eng"
+     ],
+     "lastauthor": "Walker-Smith JA",
+     "locationlabel": "",
+     "medium": "",
+     "nlmuniqueid": "2985213R",
+     "pages": "637-41",
+     "pmcrefcount": "",
+     "pubdate": "1998 Feb 28",
+     "publisherlocation": "",
+     "publishername": "",
+     "pubstatus": "4",
+     "pubtype": [
+      "Journal Article",
+      "Research Support, Non-U.S. Gov't",
+      "Retracted Publication"
+     ],
+     "recordstatus": "PubMed - indexed for MEDLINE",
+     "references": [
+      {
+       "note": "",
+       "pmid": 9500313,
+       "refsource": "Lancet. 1998 Feb 28;351(9103):611-2. doi: 10.1016/S0140-6736(05)78423-3.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9525390,
+       "refsource": "Lancet. 1998 Mar 21;351(9106):905; author reply 908-9.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9525391,
+       "refsource": "Lancet. 1998 Mar 21;351(9106):905-6; author reply 908-9. doi: 10.1016/S0140-6736(05)70316-0.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9525392,
+       "refsource": "Lancet. 1998 Mar 21;351(9106):906; author reply 908-9. doi: 10.1016/s0140-6736(05)70317-2.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9525393,
+       "refsource": "Lancet. 1998 Mar 21;351(9106):906-7; author reply 908-9. doi: 10.1016/S0140-6736(05)70318-4.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9525394,
+       "refsource": "Lancet. 1998 Mar 21;351(9106):907; author reply 908-9. doi: 10.1016/S0140-6736(05)70319-6.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9525395,
+       "refsource": "Lancet. 1998 Mar 21;351(9106):907; author reply 908-9. doi: 10.1016/S0140-6736(05)70320-2.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9525396,
+       "refsource": "Lancet. 1998 Mar 21;351(9106):907-8; author reply 908-9. doi: 10.1016/S0140-6736(05)70321-4.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9643815,
+       "refsource": "Lancet. 1998 May 2;351(9112):1355; author reply 1356.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9643816,
+       "refsource": "Lancet. 1998 May 2;351(9112):1355; author reply 1356. doi: 10.1016/S0140-6736(05)79080-2.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9643817,
+       "refsource": "Lancet. 1998 May 2;351(9112):1355-6; author reply 1356. doi: 10.1016/S0140-6736(05)79081-4.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9643818,
+       "refsource": "Lancet. 1998 May 2;351(9112):1356. doi: 10.1016/S0140-6736(05)79082-6.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9643820,
+       "refsource": "Lancet. 1998 May 2;351(9112):1357. doi: 10.1016/S0140-6736(05)79085-1.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9643821,
+       "refsource": "Lancet. 1998 May 2;351(9112):1357. doi: 10.1016/s0140-6736(05)79087-5.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9643822,
+       "refsource": "Lancet. 1998 May 2;351(9112):1357-8. doi: 10.1016/S0140-6736(05)79088-7.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9643823,
+       "refsource": "Lancet. 1998 May 2;351(9112):1358. doi: 10.1016/s0140-6736(05)79089-9.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 9683237,
+       "refsource": "Lancet. 1998 Jul 18;352(9123):234-5. doi: 10.1016/S0140-6736(05)77837-5.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 10963264,
+       "refsource": "Lancet. 2000 Jul 8;356(9224):160-1. doi: 10.1016/s0140-6736(05)73169-x.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 10963266,
+       "refsource": "Lancet. 2000 Jul 8;356(9224):161. doi: 10.1016/S0140-6736(05)73171-8.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 10963267,
+       "refsource": "Lancet. 2000 Jul 8;356(9224):161-2. doi: 10.1016/S0140-6736(05)73172-X.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 12086756,
+       "refsource": "Lancet. 2002 Jun 15;359(9323):2051-2. doi: 10.1016/S0140-6736(02)08948-1.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 15016482,
+       "refsource": "Lancet. 2004 Mar 6;363(9411):747-9. doi: 10.1016/S0140-6736(04)15714-0.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 15016483,
+       "refsource": "Lancet. 2004 Mar 6;363(9411):750. doi: 10.1016/S0140-6736(04)15715-2.",
+       "reftype": "Retraction in"
+      },
+      {
+       "note": "",
+       "pmid": 15022645,
+       "refsource": "Lancet. 2004 Mar 6;363(9411):820-1. doi: 10.1016/S0140-6736(04)15699-7.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 15022648,
+       "refsource": "Lancet. 2004 Mar 6;363(9411):821-2. doi: 10.1016/s0140-6736(04)15708-5.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 15022649,
+       "refsource": "Lancet. 2004 Mar 6;363(9411):822-3. doi: 10.1016/S0140-6736(04)15709-7.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 15022650,
+       "refsource": "Lancet. 2004 Mar 6;363(9411):823-4. doi: 10.1016/S0140-6736(04)15710-3.",
+       "reftype": "Comment in"
+      },
+      {
+       "note": "",
+       "pmid": 20137807,
+       "refsource": "Lancet. 2010 Feb 6;375(9713):445. doi: 10.1016/S0140-6736(10)60175-4.",
+       "reftype": "Retraction in"
+      },
+      {
+       "note": "",
+       "pmid": 21971344,
+       "refsource": "Eur J Gastroenterol Hepatol. 2011 Nov;23(11):1082. doi: 10.1097/MEG.0b013e328349d184.",
+       "reftype": "Expression of concern in"
+      }
+     ],
+     "reportnumber": "",
+     "sortfirstauthor": "Wakefield AJ",
+     "sortpubdate": "1998/02/28 00:00",
+     "sorttitle": "ileal lymphoid nodular hyperplasia non specific colitis and pervasive developmental disorder in children",
+     "source": "Lancet",
+     "srccontriblist": [],
+     "srcdate": "",
+     "title": "Ileal-lymphoid-nodular hyperplasia, non-specific colitis, and pervasive developmental disorder in children.",
+     "uid": "9500320",
+     "vernaculartitle": "",
+     "volume": "351"
+    },
+    "uids": [
+     "9500320"
+    ]
+   }
+  },
+  "status": 200,
+  "text": null
+ },
+ "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=99999999999&retmode=json": {
+  "json": {
+   "header": {
+    "type": "esummary",
+    "version": "0.3"
+   },
+   "result": {
+    "99999999999": {
+     "error": "cannot get document summary",
+     "uid": "99999999999"
+    },
+    "uids": [
+     "99999999999"
+    ]
+   }
+  },
+  "status": 200,
+  "text": null
+ }
+}
