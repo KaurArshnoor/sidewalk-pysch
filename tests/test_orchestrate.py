@@ -244,10 +244,17 @@ async def test_orchestrate_end_to_end(monkeypatch, results):
     monkeypatch.setattr(app, "run_agent", fake_agent)
     monkeypatch.setattr(agents.Runner, "run", fake_run)
     offline = httpx.MockTransport(lambda request: httpx.Response(500, text="offline"))
+    events = []
     async with httpx.AsyncClient(transport=offline) as client:
         out = await app.orchestrate("Is walkability associated with loneliness?", ROOT / "data/processed/study",
-                                    client=client)
+                                    client=client, hooks=SimpleNamespace(emit=events.append))
 
+    stages = [(e["stage"], e.get("role")) for e in events if e["type"] == "stage"]
+    assert stages[0] == ("plan", None) and stages[-2:] == [("compare", None), ("verify", None)]
+    assert {r for s, r in stages if s == "agent"} == {"analyst", "built_environment", "literature"}
+    by_role = {e["role"]: e for e in events if e.get("stage") == "agent"}
+    assert by_role["built_environment"]["status"] == "error" and by_role["analyst"]["findings"] > 0
+    assert next(e for e in events if e.get("stage") == "compare")["verdicts"] == {"agrees": 1, "direction_unclear": 1}
     assert [t["role"] for t in out.plan["tasks"]] == ["analyst", "built_environment", "literature"]
     assert {a.role: a.status for a in out.agents} == {"analyst": "ok", "built_environment": "error",
                                                       "literature": "ok"}

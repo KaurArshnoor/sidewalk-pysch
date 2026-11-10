@@ -1,27 +1,62 @@
 <!doctype html>
 <html lang="en">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sidewalk Psych · Data workbench</title>
+<title>Sidewalk Psych · Neighborhoods &amp; mental health</title>
 <style>
-  :root{font-family:system-ui,sans-serif;color:#18362e;background:#f4f3eb;line-height:1.55}
-  *{box-sizing:border-box}body{margin:0}main{max-width:980px;margin:auto;padding:40px 24px 80px}
-  header{border-bottom:2px solid #285f4b;padding-bottom:26px;margin-bottom:28px}
-  .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase}h1{font-family:Georgia,serif;font-size:48px;font-weight:400;margin:8px 0}
-  h2{font-size:18px;margin-top:0}p{max-width:740px}section{background:#fffef9;border:1px solid #d7ddd2;padding:24px;margin:20px 0;border-radius:8px}
-  label{display:block;font-size:14px;font-weight:600;margin:16px 0 6px}select,textarea,button{font:inherit}
-  select,textarea{width:100%;padding:12px;background:white;border:1px solid #a8b9ac;border-radius:4px}
-  textarea{min-height:105px;resize:vertical}button{background:#285f4b;color:white;padding:11px 22px;border:0;border-radius:4px;margin-top:16px;cursor:pointer}
-  button:disabled{opacity:.5;cursor:wait}.badge{display:inline-block;border:1px solid #b7a05d;background:#fff1c5;padding:5px 12px;border-radius:20px;font-size:12px}
-  pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;color:#263b31}summary{cursor:pointer}#status{font-size:14px;margin-left:12px}
-  #activity{font-size:13px}#response{white-space:pre-wrap;font-size:14px}.muted{color:#65776c;font-size:13px}
-  @media(max-width:600px){h1{font-size:36px}main{padding:24px 16px}section{padding:18px}}
+  /* Palette from the street: park greens, paving greys, warm brick; amber only for things that need attention */
+  :root{
+    --ink:#18362e;--ink-soft:#4c5a51;--muted:#65776c;--park:#285f4b;--park-dark:#1e4a3a;--leaf:#7fb493;--grass:#b9d3b0;
+    --paving:#ddd9cd;--paving-line:#c9c3b3;--curb:#b8b2a2;--asphalt:#585f5b;--brick:#c98f6b;--amber:#c9a44c;
+    --paper:#fffef9;--ground:#f4f3eb;--line:#dedbd0;
+    font-family:system-ui,sans-serif;color:var(--ink);background:var(--ground);line-height:1.55}
+  *{box-sizing:border-box}body{margin:0;background:var(--ground)}main{max-width:980px;margin:auto;padding:32px 24px 80px}
+  a{color:var(--park)}p{max-width:740px}
+  /* Masthead: a faint city street grid with a park block, ending in a curb */
+  .masthead{position:relative;margin-bottom:30px;padding:30px 30px 28px;border-radius:10px;border:1px solid var(--line);
+    background-color:#eef3ea;
+    background-image:
+      linear-gradient(rgba(127,180,147,.22),rgba(127,180,147,.22)),linear-gradient(rgba(127,180,147,.16),rgba(127,180,147,.16)),
+      linear-gradient(90deg,rgba(40,95,75,.07) 3px,transparent 3px),linear-gradient(rgba(40,95,75,.07) 3px,transparent 3px),
+      linear-gradient(90deg,rgba(40,95,75,.035) 1px,transparent 1px),linear-gradient(rgba(40,95,75,.035) 1px,transparent 1px);
+    background-size:112px 58px,56px 58px,240px 100%,100% 124px,60px 100%,100% 31px;
+    background-position:calc(100% - 22px) 20px,calc(100% - 146px) 20px,-30px 0,0 -18px,-30px 0,0 -18px;
+    background-repeat:no-repeat,no-repeat,repeat,repeat,repeat,repeat;
+    box-shadow:inset 0 -6px 0 var(--paving),inset 0 -8px 0 var(--curb)}
+  .masthead-inner{display:flex;gap:18px;align-items:flex-start}
+  .mark{flex:none;width:52px;height:52px;margin-top:4px}
+  .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--park);font-weight:600}
+  h1{font-family:Georgia,serif;font-size:48px;font-weight:400;margin:4px 0 8px;line-height:1.1}
+  .masthead p{margin:0 0 14px;color:var(--ink-soft);font-size:16px}
+  .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,254,249,.9);border:1px solid var(--paving-line);
+    color:var(--park);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600}
+  .badge::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--leaf);box-shadow:0 0 0 3px rgba(127,180,147,.25)}
+  .badge.warn{color:#7a4a0c}.badge.warn::before{background:var(--amber);box-shadow:0 0 0 3px rgba(201,164,76,.25)}
+  /* Sections: paper cards that start at a curb (a band of paving, then the curb line) */
+  section{background:var(--paper);border:1px solid var(--line);padding:30px 24px 24px;margin:20px 0;border-radius:8px;
+    box-shadow:inset 0 5px 0 var(--paving),inset 0 7px 0 var(--curb)}
+  h2{font-family:Georgia,serif;font-weight:400;font-size:24px;margin:0 0 4px;color:var(--ink)}
+  label{display:block;font-size:14px;font-weight:600;margin:16px 0 6px;color:var(--ink)}select,textarea,button{font:inherit}
+  select,textarea{width:100%;padding:12px;background:white;color:var(--ink);border:1px solid var(--paving-line);border-radius:6px}
+  select:focus-visible,textarea:focus-visible{outline:3px solid rgba(127,180,147,.45);outline-offset:1px;border-color:var(--park)}
+  textarea{min-height:105px;resize:vertical}
+  button{background:var(--park);color:white;padding:11px 22px;border:0;border-radius:6px;margin-top:16px;cursor:pointer;font-weight:600}
+  button:hover{background:var(--park-dark)}button:focus-visible{outline:3px solid var(--leaf);outline-offset:2px}
+  button:disabled{opacity:.5;cursor:wait}
+  summary{cursor:pointer;color:var(--park);font-weight:600;font-size:14px}
+  pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;color:#263b31}#status{font-size:14px;margin-left:12px;color:var(--ink-soft)}
+  #activity{font-size:13px}#response{white-space:pre-wrap;font-size:14px}.muted{color:var(--muted);font-size:13px}
+  main>details{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px 18px}
+  .page-note{margin-top:28px;padding-top:16px;border-top:2px solid var(--curb);box-shadow:inset 0 4px 0 var(--paving)}
+  @media(max-width:600px){h1{font-size:36px}main{padding:20px 16px 60px}section{padding:26px 16px 18px}
+    .masthead{padding:22px 18px 24px}.mark{width:40px;height:40px}}
   /* Readable report (full study) */
   #report{max-width:760px}#report[hidden]{display:none}
   .report-bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;font-size:13px;color:#65776c;border-bottom:1px solid #e2e6dc;padding-bottom:12px;margin-bottom:8px}
   .report-bar button{margin:0;padding:6px 12px;font-size:13px;background:white;color:#285f4b;border:1px solid #a8b9ac}
+  .report-bar button:hover{background:#eef4ef}
   .report-bar label{display:inline-flex;gap:6px;align-items:center;margin:0;font-weight:400}
   .legend span{margin-left:8px;padding-bottom:1px}
-  .rsec{margin:26px 0 0;background:none;border:0;padding:0;border-radius:0}.rsec h3{font-family:Georgia,serif;font-weight:400;font-size:22px;margin:0 0 8px;color:#18362e}
+  .rsec{margin:26px 0 0;background:none;border:0;padding:0;border-radius:0;box-shadow:none}.rsec h3{font-family:Georgia,serif;font-weight:400;font-size:22px;margin:0 0 8px;color:#18362e}
   .rsec p,.rsec li{font-size:16px;line-height:1.7;max-width:none}.rsec.question p{font-size:18px;font-style:italic;color:#264c3f}
   .cite{font-size:11px;margin-left:1px}.cite a{text-decoration:none;color:#285f4b;font-weight:600}.cite a:hover{text-decoration:underline}
   .show-hedge .h-suggests{text-decoration:underline solid #9cc2ae 2px;text-underline-offset:4px}
@@ -65,11 +100,67 @@
   .card details{margin:8px 0 0;font-size:13px}.card details ul{padding-left:18px;margin:6px 0}.card details li{margin:3px 0}
   .card .srcs{font-size:13px;margin:8px 0 0;color:#4c5a51}.card .srcs a{margin-right:10px}
   .note-box{background:#eef4ef;border:1px solid #c9dccf;border-radius:6px;padding:12px 16px;margin:14px 0;font-size:15px}
+  /* Study route: progress shown as a walk along a street */
+  #route{margin:4px 0 22px;padding:16px 18px 12px;background:#f7f6f0;border:1px solid #e2e3d8;border-radius:8px}#route[hidden]{display:none}
+  .route-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px}
+  .route-head strong{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#4c5a51}
+  #route-clock{font-variant-numeric:tabular-nums;font-size:13px;color:#65776c}
+  /* The street (decorative SVG; the text row below carries the information) */
+  .street{display:block;width:100%;height:auto;margin:0 0 4px;border-radius:6px;background:#eef3ea}
+  .street .landmark{opacity:.5;transition:opacity .6s}.street .landmark.active,.street .landmark.done,.street .landmark.warn{opacity:1}
+  .street .landmark.skipped{opacity:.22}
+  .street .sign{fill:#9a9482;transition:fill .6s}.street .active .sign{fill:#285f4b}.street .done .sign{fill:#3f7a55}.street .warn .sign{fill:#c9a44c}
+  .street .col{fill:#f6f1e4;stroke:#cdc3ac;stroke-width:1.5;transition:fill .6s}
+  .street .col.working{fill:#d5e8db}.street .col.ok{fill:#7fb493}.street .col.partial,.street .col.error{fill:#e6c06e}
+  .street .col.insufficient,.street .col.needs_clarification{fill:#c9cdc2}
+  .street .zebra rect{fill:#7b837e;transition:fill .6s}.street .active .zebra rect,.street .done .zebra rect,.street .warn .zebra rect{fill:#f3f0e4}
+  .street .win{fill:#d8d0bc;transition:fill .6s}.street .active .win,.street .done .win,.street .warn .win{fill:#ffd97a}
+  .street .lamp{fill:#5a625d;transition:fill .6s}.street .active .lamp.amber,.street .warn .lamp.amber{fill:#f2b84b}
+  .street .done .lamp.green{fill:#79d79b}
+  .street #walked{transform-origin:0 0;transform:scaleX(0);transition:transform 1.4s ease-in-out}
+  .street #walker{transition:transform 1.4s ease-in-out}
+  .street .leg{transform-box:fill-box;transform-origin:50% 0}  /* pivot at the hip */
+  .street .leg-a{transform:rotate(14deg)}.street .leg-b{transform:rotate(-14deg)}  /* standing stride */
+  @media (prefers-reduced-motion:no-preference){
+    #route.running .street .leg-a{animation:swing .5s ease-in-out infinite alternate}
+    #route.running .street .leg-b{animation:swing .5s ease-in-out infinite alternate-reverse}
+    #route.running .street .col.working{animation:glow 1.4s ease-in-out infinite}
+    @keyframes swing{from{transform:rotate(-16deg)}to{transform:rotate(16deg)}}
+    @keyframes glow{50%{fill:#b3d6bf}}
+  }
+  @media (prefers-reduced-motion:reduce){.street #walker,.street #walked{transition:none}}
+  .route{display:grid;grid-template-columns:repeat(5,1fr);list-style:none;margin:0;padding:0}
+  .stop{text-align:center;min-width:0;padding:4px 2px 0}
+  .stop .name{display:block;font-size:14px;font-weight:600;color:#9aa59d}
+  .stop.active .name,.stop.done .name,.stop.warn .name{color:#18362e}
+  .stop.done .name::before{content:"✓ ";color:#3f7a55}.stop.warn .name::before{content:"! ";color:#b0832c}
+  .stop.active .name::before{content:"● ";color:#285f4b;font-size:10px;vertical-align:2px}
+  .stop.skipped .name{text-decoration:line-through;text-decoration-color:#c9cdc2}
+  .stop .detail{display:block;font-size:12px;color:#65776c;min-height:1.3em;padding:0 4px;overflow-wrap:anywhere}
+  .route-now{display:none;margin:6px 0 0;font-size:13px;color:#264c3f}
+  .crew{list-style:none;margin:14px 0 0;padding:10px 0 0;border-top:1px solid #e2e3d8;display:grid;gap:6px}
+  .crew li{display:grid;grid-template-columns:12px minmax(130px,190px) 1fr;gap:10px;align-items:baseline;font-size:13px}
+  .crew .pip{width:10px;height:10px;border-radius:50%;background:#c9cdc2;align-self:center}
+  .crew .working .pip{background:#285f4b}.crew .ok .pip{background:#7fb493}.crew .partial .pip,.crew .error .pip{background:#c9a44c}
+  .crew .insufficient .pip{background:#a8b1aa}.crew strong{font-weight:600;color:#18362e}.crew .what{color:#4c5a51;overflow-wrap:anywhere}
+  @media (max-width:600px){
+    #route{padding:12px 12px 10px}
+    .stop .name{font-size:12px}.stop .detail{display:none}.route-now{display:block}
+    .crew li{grid-template-columns:12px 1fr}.crew .what{grid-column:2}
+  }
 </style>
 <main>
-  <header><div class="eyebrow">Data exploration agents</div><h1>Sidewalk Psych</h1>
-    <p>A workbench for researchers studying walkability and mental health. Inspect neighborhood measures, check their limits, and test tract-level associations.</p>
-    <span id="mode" class="badge">Checking dataset…</span></header>
+  <header class="masthead"><div class="masthead-inner">
+    <svg class="mark" viewBox="0 0 52 52" aria-hidden="true" focusable="false">
+      <rect width="52" height="52" rx="12" fill="#285f4b"/>
+      <rect x="6" y="36" width="40" height="9" rx="1.5" fill="#ddd9cd"/><path d="M19 36v9M33 36v9" stroke="#b8b2a2" stroke-width="1.6"/>
+      <rect x="6" y="34" width="40" height="2.4" fill="#b8b2a2"/>
+      <rect x="24.6" y="22" width="3" height="12" fill="#a07c55"/>
+      <circle cx="26" cy="18" r="10" fill="#7fb493"/><circle cx="21" cy="21" r="6" fill="#5f9a6e"/>
+    </svg>
+    <div><div class="eyebrow">Neighborhoods &amp; mental health · a research workbench</div><h1>Sidewalk Psych</h1>
+    <p>For researchers studying walkability and mental health. Inspect neighborhood measures, check their limits, test tract-level associations, and compare them with published research.</p>
+    <span id="mode" class="badge">Checking dataset…</span></div></div></header>
   <section><h2>Explore a metro area</h2><p class="muted">Choose a metro and a specialist. Analyze neighborhood patterns, then inspect the supporting evidence.</p>
     <form id="task"><label for="metro">Metro area</label><select id="metro"><option value="">All 20 metros</option></select>
       <p class="muted">Metro areas include the city and surrounding counties, rather than city limits.</p><label for="agent">Specialist</label><select id="agent">
@@ -81,12 +172,12 @@
       <label for="question">Question</label><textarea id="question" maxlength="2000">Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?</textarea>
       <button id="run">Explore data</button><span id="status" role="status"></span></form>
   </section>
-  <section><h2>Findings</h2><p id="scope" class="muted"></p><article id="report" hidden></article><div id="cards" hidden></div><div id="response">The selected agent's tool-supported findings will appear here.</div>
+  <section><h2>Findings</h2><p id="scope" class="muted"></p><div id="route" hidden aria-label="Study progress"></div><article id="report" hidden></article><div id="cards" hidden></div><div id="response">The selected agent's tool-supported findings will appear here.</div>
     <details><summary>Tool activity and model context</summary><ol id="activity"></ol><div id="context-container"></div></details>
     <details><summary>Sources</summary><ul id="sources"></ul></details><details><summary>Structured findings and caveats</summary><pre id="findings">No run yet.</pre></details>
     <details><summary>Tool calls · includes agent names</summary><pre id="tools">No run yet.</pre></details></section>
   <details><summary>Snapshot provenance and coverage</summary><pre id="metadata"></pre></details>
-  <p class="muted">This workbench uses modeled frequent mental distress, rather than direct loneliness or social-connection measures. Neighborhood associations cannot establish causation. The literature researcher reads abstracts only and runs separately from the data agents.</p>
+  <p class="muted page-note">This workbench uses modeled frequent mental distress, rather than direct loneliness or social-connection measures. Neighborhood associations cannot establish causation. The literature researcher reads abstracts only and runs separately from the data agents.</p>
 </main>
 <script src="/context-panel.js"></script>
 <script>
@@ -214,6 +305,229 @@
     root.hidden = false;
     $('response').hidden = true;
   }
+
+  // Study route: a full study's progress as stops along a street. Driven by the activity stream:
+  // hook "activity" events (agent started / called a tool) and orchestrator "stage" events (plan, each
+  // agent's final status, comparison, verification).
+  const STOPS = [['plan', 'Plan'], ['research', 'Research'], ['compare', 'Compare'], ['write', 'Write'], ['verify', 'Verify']];
+  const RESEARCH = ['built_environment', 'health_demographics', 'analyst', 'literature'];
+  const TOOL_TEXT = {
+    dataset_metadata: 'reading dataset coverage', profile: 'summarizing measures', fit_association: 'fitting a model',
+    search_pubmed: 'searching PubMed', search_openalex: 'searching OpenAlex', search_psyarxiv: 'searching PsyArXiv',
+    record_study: 'recording a study',
+  };
+  // The street: five landmarks centered at x = 100, 300, 500, 700, 900 (viewBox units), one per stop.
+  // Static markup with no data in it; the walker and landmark classes are updated by Route.set.
+  const STREET_SVG = `
+<svg class="street" viewBox="0 0 1000 164" role="presentation" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="pavers" width="38" height="22" patternUnits="userSpaceOnUse">
+      <rect width="38" height="22" fill="#ddd9cd"/><path d="M38 0V22" stroke="#c9c3b3" stroke-width="1.5"/>
+    </pattern>
+    <pattern id="pavers-low" width="38" height="12" patternUnits="userSpaceOnUse">
+      <rect width="38" height="12" fill="#ddd9cd"/><path d="M38 0V12" stroke="#c9c3b3" stroke-width="1.5"/>
+    </pattern>
+  </defs>
+  <rect x="0" y="66" width="1000" height="12" fill="#b9d3b0"/>
+  <g class="tree"><rect x="198" y="52" width="5" height="22" fill="#7a6248"/><circle cx="200" cy="44" r="15" fill="#6aa277"/><circle cx="192" cy="50" r="9" fill="#55906a"/></g>
+  <g class="tree"><rect x="398" y="52" width="5" height="22" fill="#7a6248"/><circle cx="400" cy="42" r="16" fill="#5f9a6e"/><circle cx="409" cy="49" r="9" fill="#4f8a5f"/></g>
+  <g class="tree"><rect x="598" y="52" width="5" height="22" fill="#7a6248"/><circle cx="600" cy="44" r="15" fill="#6aa277"/><circle cx="591" cy="49" r="9" fill="#55906a"/></g>
+  <g class="tree"><rect x="798" y="52" width="5" height="22" fill="#7a6248"/><circle cx="800" cy="42" r="16" fill="#5f9a6e"/><circle cx="808" cy="50" r="9" fill="#4f8a5f"/></g>
+
+  <g class="landmark" data-landmark="plan">
+    <rect x="97" y="26" width="5" height="52" rx="1" fill="#6b5a45"/>
+    <path class="sign" d="M102 30h36l8 7-8 7h-36z"/><path class="sign" d="M97 48h-34l-8 7 8 7h34z"/>
+  </g>
+  <g class="landmark" data-landmark="research">
+    <rect x="240" y="70" width="120" height="8" fill="#cfc6b1"/>
+    <rect x="248" y="36" width="104" height="34" fill="#ece4d3"/>
+    <path d="M242 37 300 14 358 37z" fill="#d9ccb2"/>
+    <rect class="col" data-col="0" x="257" y="40" width="11" height="30" rx="1"/>
+    <rect class="col" data-col="1" x="280" y="40" width="11" height="30" rx="1"/>
+    <rect class="col" data-col="2" x="309" y="40" width="11" height="30" rx="1"/>
+    <rect class="col" data-col="3" x="332" y="40" width="11" height="30" rx="1"/>
+  </g>
+  <g class="landmark" data-landmark="compare">
+    <rect x="497" y="40" width="5" height="38" fill="#5a625d"/>
+    <rect x="484" y="18" width="31" height="28" rx="4" fill="#3d6f8e"/><path d="M499.5 23 510 41h-21z" fill="#f3f0e4"/>
+  </g>
+  <g class="landmark" data-landmark="write">
+    <rect x="650" y="32" width="100" height="46" fill="#c98f6b"/>
+    <path class="sign" d="M644 28h112l-5 13H649z"/>
+    <rect class="win" x="662" y="48" width="44" height="20" rx="2"/>
+    <rect x="718" y="50" width="20" height="28" fill="#6b4a36"/>
+  </g>
+  <g class="landmark" data-landmark="verify">
+    <rect x="897" y="44" width="6" height="34" fill="#4a524d"/>
+    <rect x="887" y="8" width="26" height="46" rx="6" fill="#2e3532"/>
+    <circle class="lamp red" cx="900" cy="19" r="5.5"/><circle class="lamp amber" cx="900" cy="31" r="5.5"/>
+    <circle class="lamp green" cx="900" cy="43" r="5.5"/>
+  </g>
+
+  <rect x="0" y="78" width="1000" height="22" fill="url(#pavers)"/>
+  <rect id="walked" x="0" y="78" width="1000" height="22" fill="#8fc5a1" opacity=".45"/>
+  <rect x="0" y="100" width="1000" height="4" fill="#b8b2a2"/>
+  <rect x="0" y="104" width="1000" height="40" fill="#585f5b"/>
+  <path d="M0 124H1000" stroke="#ece8d8" stroke-width="3" stroke-dasharray="26 18"/>
+  <rect x="466" y="105" width="68" height="38" fill="#585f5b"/>
+  <g class="landmark" data-landmark="compare-road"><g class="zebra">
+    <rect x="470" y="107" width="60" height="4.5"/><rect x="470" y="115" width="60" height="4.5"/>
+    <rect x="470" y="123" width="60" height="4.5"/><rect x="470" y="131" width="60" height="4.5"/>
+    <rect x="470" y="139" width="60" height="4.5"/>
+  </g></g>
+  <rect x="0" y="144" width="1000" height="4" fill="#b8b2a2"/>
+  <rect x="0" y="148" width="1000" height="12" fill="url(#pavers-low)"/>
+  <rect x="0" y="160" width="1000" height="4" fill="#b9d3b0"/>
+
+  <g id="walker" style="transform:translateX(40px)">
+    <g stroke="#18362e" stroke-width="3.4" stroke-linecap="round" fill="none">
+      <path class="arm" d="M0 71-7 79M0 71l7 6"/><path d="M0 68v17"/>
+      <path class="leg leg-a" d="M0 84v13"/><path class="leg leg-b" d="M0 84v13"/>
+    </g>
+    <circle cx="0" cy="61" r="5.5" fill="#18362e"/>
+  </g>
+</svg>`;
+  const STOP_X = { plan: 100, research: 300, compare: 500, write: 700, verify: 900 };
+
+  const Route = {
+    start() {
+      const root = $('route');
+      const street = el('div');
+      street.innerHTML = STREET_SVG;  // static markup above; contains no run data
+      root.replaceChildren(
+        el('div', { class: 'route-head' }, el('strong', { text: 'Study route' }), el('span', { id: 'route-clock', text: '0:00' })),
+        street,
+        el('ol', { class: 'route' }, ...STOPS.map(([id, name]) => el('li', { class: 'stop', 'data-stop': id },
+          el('span', { class: 'name', text: name }), el('span', { class: 'detail', id: 'stop-' + id })))),
+        el('p', { class: 'route-now', id: 'route-now' }),
+        el('ul', { class: 'crew', id: 'crew', hidden: '' }));
+      root.hidden = false;
+      root.classList.add('running');
+      this.agents = {}; this.round = 0; this.started = Date.now(); this.furthest = -1;
+      clearInterval(this.timer);
+      this.timer = setInterval(() => {
+        const s = Math.floor((Date.now() - this.started) / 1000);
+        const clock = $('route-clock'); if (clock) clock.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+      }, 1000);
+      this.set('plan', 'active', 'Reading the question');
+    },
+    set(id, state, detail) {
+      const root = $('route'), stop = root.querySelector(`[data-stop="${id}"]`);
+      if (!stop) return;
+      if (state) {
+        stop.className = 'stop ' + state;
+        for (const key of id === 'compare' ? ['compare', 'compare-road'] : [id]) {
+          const landmark = root.querySelector(`[data-landmark="${key}"]`);
+          if (landmark) landmark.setAttribute('class', 'landmark ' + state);
+        }
+        if (/active|done|warn/.test(state)) this.walkTo(id, state);
+      }
+      if (detail != null) $('stop-' + id).textContent = detail;
+      if (state === 'active') {
+        const line = `${STOPS.find(s => s[0] === id)[1]}: ${detail || ''}`.replace(/: $/, '');
+        $('status').textContent = line;
+        const now = $('route-now'); if (now) now.textContent = 'Now: ' + line;
+      }
+    },
+    walkTo(id, state) {
+      // The walker never walks backwards: it stands just before the furthest stop reached,
+      // and steps past the last one when the route is finished.
+      const index = STOPS.findIndex(s => s[0] === id);
+      if (index < this.furthest) return;
+      this.furthest = index;
+      const x = id === 'verify' && state !== 'active' ? 965 : STOP_X[id] - 34;
+      const root = $('route'), walker = root.querySelector('#walker'), walked = root.querySelector('#walked');
+      if (walker) walker.style.transform = `translateX(${x}px)`;
+      if (walked) walked.style.transform = `scaleX(${(x / 1000).toFixed(3)})`;
+    },
+    state(id) { const stop = $('route').querySelector(`[data-stop="${id}"]`); return stop ? stop.className.replace('stop', '').trim() : ''; },
+    agentRow(role, sub) {
+      const crew = $('crew'); crew.hidden = false;
+      const row = el('li', { class: 'waiting' }, el('span', { class: 'pip' }),
+        el('strong', { text: AGENT_LABEL[role] || role, title: sub || '' }), el('span', { class: 'what', text: 'waiting to start' }));
+      crew.append(row);
+      // Each planned agent gets one column of the library, in plan order.
+      const column = $('route').querySelector(`[data-col="${Object.keys(this.agents).length}"]`);
+      this.agents[role] = { row, done: false, column };
+    },
+    agentUpdate(role, cls, text) {
+      const agent = this.agents[role]; if (!agent) return;
+      if (cls) {
+        agent.row.className = cls;
+        if (agent.column) agent.column.setAttribute('class', 'col ' + cls);
+      }
+      agent.row.querySelector('.what').textContent = text;
+    },
+    researchDetail() {
+      const all = Object.values(this.agents), done = all.filter(a => a.done).length;
+      return `${done} of ${all.length} agents done`;
+    },
+    handle(event) {
+      if (event.type === 'activity') {
+        const who = event.agent, text = event.text || '';
+        if (who === 'planner') { if (text === 'started') this.set('plan', 'active', 'Choosing which agents to send'); return; }
+        if (RESEARCH.includes(who)) {
+          const agent = this.agents[who];
+          if (!agent || agent.done) return;
+          if (text === 'started') this.agentUpdate(who, 'working', 'working…');
+          else if (text.startsWith('called ')) { const tool = text.slice(7); this.agentUpdate(who, 'working', (TOOL_TEXT[tool] || tool.replace(/_/g, ' ')) + '…'); }
+          return;
+        }
+        if (who === 'writer' && text === 'started') {
+          this.round += 1;
+          if (this.state('compare') !== 'done' && this.state('compare') !== 'warn') this.set('compare', 'done');
+          this.set('write', 'active', this.round === 1 ? 'Drafting the report' : `Revising (round ${this.round})`);
+          if (this.round > 1) this.set('verify', 'active', `Round ${this.round - 1} flagged sentences`);
+          return;
+        }
+        if (who === 'verifier' && text === 'started') {
+          this.set('write', 'done', this.round === 1 ? 'Draft written' : `Revised ${this.round - 1}×`);
+          this.set('verify', 'active', `Checking every sentence (round ${this.round})`);
+        }
+        return;
+      }
+      if (event.type !== 'stage') return;
+      if (event.stage === 'plan') {
+        const n = event.tasks.length;
+        this.set('plan', 'done', n ? `${n} agent${n === 1 ? '' : 's'} chosen` : 'Needs clarification');
+        for (const task of event.tasks) this.agentRow(task.role, task.sub_question);
+        if (n) this.set('research', 'active', this.researchDetail());
+      } else if (event.stage === 'agent') {
+        const agent = this.agents[event.role]; if (!agent) return;
+        agent.done = true;
+        const text = event.status === 'error' ? `did not finish: ${event.error || 'error'}`
+          : event.status === 'partial' ? `${event.findings} finding${event.findings === 1 ? '' : 's'} (cut short: ${(event.error || '').split(';')[0].replace(/^The \w+( \w+)? agent /, '')})`
+          : event.status === 'needs_clarification' ? 'asked a clarifying question'
+          : `${event.findings} finding${event.findings === 1 ? '' : 's'}`;
+        this.agentUpdate(event.role, event.status, text);
+        const all = Object.values(this.agents);
+        if (all.every(a => a.done)) {
+          const trouble = all.some(a => /partial|error/.test(a.row.className));
+          this.set('research', trouble ? 'warn' : 'done', this.researchDetail() + (trouble ? ' · some partial' : ''));
+          this.set('compare', 'active', 'Matching studies with our data');
+        } else {
+          this.set('research', 'active', this.researchDetail());
+        }
+      } else if (event.stage === 'compare') {
+        const v = event.verdicts || {}, n = event.comparisons;
+        const parts = Object.entries(v).map(([k, c]) => `${c} ${k.replace('_', ' ')}`);
+        this.set('compare', n ? 'done' : 'skipped', n ? parts.join(', ') : 'Nothing to compare');
+      } else if (event.stage === 'verify') {
+        this.set('write', 'done', event.rounds > 1 ? `Revised ${event.rounds - 1}×` : 'Draft written');
+        this.set('verify', event.removed ? 'warn' : 'done',
+          `${event.rounds} round${event.rounds === 1 ? '' : 's'}` + (event.removed ? ` · ${event.removed} removed` : ' · all passed'));
+      } else if (event.stage === 'study' && event.state === 'stopped') {
+        for (const [id] of STOPS) if (!/done|warn/.test(this.state(id))) this.set(id, 'skipped', '');
+      }
+    },
+    finish(ok) {
+      clearInterval(this.timer);
+      $('route').classList.remove('running');
+      if (!this.agents) return;
+      const now = $('route-now'); if (now) now.textContent = ok ? 'Route finished.' : 'Route stopped by an error.';
+      if (!ok) for (const [id] of STOPS) if (this.state(id) === 'active') this.set(id, 'warn', 'Stopped by an error');
+    },
+  };
 
   // Finding cards for a single agent's result (claim, evidence, sources, confidence, caveats).
   const CONFIDENCE = {
@@ -364,24 +678,26 @@
     $('findings').textContent=JSON.stringify(event.results,null,2);$('tools').textContent=JSON.stringify({plan:event.plan,notes:event.plan_notes,agents:event.agents},null,2)}
   $('agent').onchange=()=>{$('question').value=samples[$('agent').value]};
   fetch('/metadata').then(r=>{if(!r.ok)throw Error('Snapshot unavailable');return r.json()}).then(m=>{
-    $('mode').textContent='REAL STUDY DATA · '+m.rows+' tracts';
+    $('mode').textContent=(m.synthetic?'Synthetic test data':'Real study data')+' · '+Number(m.rows).toLocaleString()+' tracts'+(m.metros&&m.metros.length?' · '+m.metros.length+' metro areas':'');if(m.synthetic)$('mode').classList.add('warn');
     $('metadata').textContent=JSON.stringify(m,null,2);
     for(const metro of m.scope.metro_lookup){const option=document.createElement('option');option.value=metro.metro;option.textContent=metro.name;$('metro').appendChild(option)}
-  }).catch(e=>{$('mode').textContent=e.message});
+  }).catch(e=>{$('mode').textContent=e.message;$('mode').classList.add('warn')});
   function finish(text){$('status').textContent=text;$('run').disabled=false;if(source)source.close()}
   $('task').onsubmit=e=>{e.preventDefault();if(source)source.close();resetContext();$('report').hidden=true;$('report').replaceChildren();$('cards').hidden=true;$('cards').replaceChildren();$('response').hidden=false;$('run').disabled=true;$('status').textContent='Running…';$('activity').replaceChildren();$('scope').textContent=$('metro').selectedOptions[0].textContent;$('response').textContent='Analyzing the selected scope…';$('sources').replaceChildren();$('findings').textContent='Running…';$('tools').textContent='Running…';
     const study=$('agent').value==='study',params=new URLSearchParams({question:$('question').value.trim()});
     if(!study)params.set('agent',$('agent').value);
     if($('metro').value)params.set('metro',$('metro').value);
     source=new EventSource((study?'/study/run?':'/run?')+params);
+    clearInterval(Route.timer);Route.agents=null;$('route').hidden=true;if(study){Route.start();$('response').textContent='The report will appear here when the route is finished.'}
     source.onmessage=message=>{const event=JSON.parse(message.data);
+      if(study){try{Route.handle(event)}catch(err){console.error(err)}if(event.type==='done')Route.finish(true);if(event.type==='error')Route.finish(false)}
       if(event.type==='start')runId=event.run_id;
       if(event.type==='context')showContext(runId);
       if(event.type==='activity'){const li=document.createElement('li');li.textContent=event.agent+': '+event.text;$('activity').appendChild(li)}
       if(event.type==='done'&&study){showStudy(event);finish('Done');return}
       if(event.type==='done'){addSources(event.result.sources);$('response').textContent=event.response;try{renderFindings(event)}catch(err){console.error(err);$('cards').hidden=true;$('response').hidden=false}$('findings').textContent=JSON.stringify(event.result,null,2);$('tools').textContent=JSON.stringify(event.tool_calls,null,2);finish('Done')}
       if(event.type==='error'){$('response').textContent=event.message;finish('Failed')}
-    };source.onerror=()=>finish('Connection lost');
+    };source.onerror=()=>{if(study)Route.finish(false);finish('Connection lost')};
   };
 </script>
 </html>

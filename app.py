@@ -460,44 +460,61 @@ async def orchestrate(question: str, dataset: str | Path, *, metro: str | None =
     set_tracing_disabled(True)
     planned = await Runner.run(create_planner(), question, hooks=hooks, max_turns=2)
     plan, notes = validate_plan(question, planned.final_output)
+    stage(hooks, "plan", "done", tasks=[{"role": t.role, "sub_question": t.sub_question} for t in plan.tasks],
+          notes=notes)
     if not plan.tasks:
         return StudyResult(question=question, plan=plan.model_dump(), plan_notes=notes, agents=[], results=[],
                            report=None, clarification=plan.clarification or "Which measure or comparison should I study?")
 
-    async def one(task):
+    async def one(task) -> tuple[AgentStatus, AgentResult]:
         # run_agent stops at the limit and returns partial work; the outer limit is only a backstop.
         limit = (timeouts or {}).get(task.role, agent_timeout(task.role))
-        return await asyncio.wait_for(run_agent(task.role, task.sub_question, dataset, hooks=hooks, metro=metro,
-                                                client=client, timeout=limit), limit + 30)
-
-    outcomes = await asyncio.gather(*(one(t) for t in plan.tasks), return_exceptions=True)
-    results, statuses = [], []
-    for task, outcome in zip(plan.tasks, outcomes):
-        if isinstance(outcome, BaseException):
-            error = f"{type(outcome).__name__}: {str(outcome)[:200]}"
-            statuses.append(AgentStatus(role=task.role, sub_question=task.sub_question, status="error", error=error))
-            results.append(AgentResult(agent=task.role, question=task.sub_question, status="insufficient",
-                                       findings=[], sources=[],
-                                       gaps=[f"The {task.role.replace('_', ' ')} agent did not finish ({type(outcome).__name__})."]))
+        try:
+            result, calls = await asyncio.wait_for(run_agent(task.role, task.sub_question, dataset, hooks=hooks,
+                                                             metro=metro, client=client, timeout=limit), limit + 30)
+        except Exception as exc:  # one agent failing never stops the study
+            status = AgentStatus(role=task.role, sub_question=task.sub_question, status="error",
+                                 error=f"{type(exc).__name__}: {str(exc)[:200]}")
+            result = AgentResult(agent=task.role, question=task.sub_question, status="insufficient", findings=[],
+                                 sources=[], gaps=[f"The {task.role.replace('_', ' ')} agent did not finish "
+                                                   f"({type(exc).__name__})."])
         else:
-            result, calls = outcome
             cut_off = next((g for g in result.gaps if PARTIAL in g), None)
-            statuses.append(AgentStatus(role=task.role, sub_question=task.sub_question,
-                                        status="partial" if cut_off else result.status, error=cut_off,
-                                        findings=len(result.findings), tool_calls=calls))
-            results.append(result)
+            status = AgentStatus(role=task.role, sub_question=task.sub_question,
+                                 status="partial" if cut_off else result.status, error=cut_off,
+                                 findings=len(result.findings), tool_calls=calls)
+        stage(hooks, "agent", "done", role=task.role, status=status.status, findings=status.findings,
+              error=status.error)
+        return status, result
+
+    pairs = await asyncio.gather(*(one(t) for t in plan.tasks))
+    statuses, results = [s for s, _ in pairs], [r for _, r in pairs]
 
     def stop(clarification):
+        stage(hooks, "study", "stopped", reason=clarification)
         return StudyResult(question=question, plan=plan.model_dump(), plan_notes=notes, agents=statuses,
                            results=results, report=None, clarification=clarification)
 
     if not any(r.findings for r in results):
         asked = next((r.clarification for r in results if r.clarification), None)
         return stop(asked or "No agent found evidence for this question.")
-    results.append(reconcile(results))
+    reconciled = reconcile(results)
+    verdicts = [f.evidence["verdict"] for f in reconciled.findings]
+    stage(hooks, "compare", "done", comparisons=len(verdicts),
+          verdicts={v: verdicts.count(v) for v in dict.fromkeys(verdicts)})
+    results.append(reconciled)
     report = await write_verified_report(question, results, hooks=hooks, max_revisions=max_revisions, client=client)
+    stage(hooks, "verify", "done", rounds=report.rounds, removed=len(report.removed))
     return StudyResult(question=question, plan=plan.model_dump(), plan_notes=notes, agents=statuses,
                        results=results, report=report)
+
+
+def stage(hooks, name: str, state: str, **details) -> None:
+    """Progress for the page's route tracker. Agent steps already arrive as hook activity events; these cover
+    what hooks cannot see: the plan, each agent's final status, and the Python-only comparison step."""
+    emit = getattr(hooks, "emit", None)  # PanelHooks on the web page; None from the CLI and evals
+    if emit is not None:
+        emit({"type": "stage", "stage": name, "state": state, **details})
 
 
 def save_run(run_id: str, result: StudyResult) -> Path:
