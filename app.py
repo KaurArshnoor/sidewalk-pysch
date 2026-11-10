@@ -16,7 +16,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from web.context_panel import AgentContexts, PanelHooks, add_context_panel
-from data import ROOT, Catalog, AgentDecision, AgentResult, Role, ToolCall, WorkContext
+from data import ROOT, Catalog, AgentDecision, AgentResult, DataRole, ToolCall, WorkContext
 
 load_dotenv(ROOT / ".env")
 
@@ -75,7 +75,7 @@ def assemble(ctx: WorkContext, question: str, decision: AgentDecision) -> AgentR
                        gaps=decision.gaps, clarification=decision.clarification)
 
 
-def create_agent(role: Role):
+def create_agent(role: DataRole):
     # Lazy import: offline data preparation does not need the model SDK.
     from agents import Agent, ModelSettings, RunContextWrapper, function_tool
     from agents.extensions.models.litellm_model import LitellmModel
@@ -131,7 +131,7 @@ def create_agent(role: Role):
                  output_type=AgentDecision)
 
 
-async def run_agent(role: Role, question: str, dataset: str | Path, *, hooks=None, metro: str | None = None):
+async def run_agent(role: DataRole, question: str, dataset: str | Path, *, hooks=None, metro: str | None = None):
     from agents import Runner, set_tracing_disabled
 
     set_tracing_disabled(True)  # Same local-only trace behavior as the starter.
@@ -171,7 +171,7 @@ add_context_panel(app, sessions)
 
 class ChatRequest(BaseModel):
     message: str = Field(min_length=5, max_length=2000)
-    agent: Role = "analyst"
+    agent: DataRole = "analyst"
     metro: str | None = Field(default=None, pattern=r"^\d{5}$")
 
 
@@ -271,7 +271,7 @@ async def chat(request: ChatRequest):
 
 
 @app.get("/run")
-async def run(question: str, agent: Role = "analyst",
+async def run(question: str, agent: DataRole = "analyst",
               metro: str | None = Query(default=None, pattern=r"^\d{5}$")):
     """Preserve the starter's SSE activity stream and inspectable context panel."""
     request = ChatRequest(message=question, agent=agent, metro=metro)

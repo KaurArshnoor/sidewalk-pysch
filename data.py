@@ -15,7 +15,8 @@ import statsmodels.formula.api as smf
 from pydantic import BaseModel, ConfigDict, Field
 
 # Shared findings format
-Role = Literal["built_environment", "health_demographics", "analyst"]
+DataRole = Literal["built_environment", "health_demographics", "analyst"]  # agents that run on the dataset
+Role = Literal[DataRole, "literature"]  # every agent that produces findings
 
 
 class Source(BaseModel):
@@ -30,6 +31,52 @@ class Source(BaseModel):
     notes: list[str] = Field(default_factory=list)
 
 
+class PaperSource(BaseModel):
+    """A published paper or preprint that a literature finding cites."""
+
+    model_config = ConfigDict(extra="forbid")
+    id: str  # e.g. "doi:10.1016/j.healthplace.2020.102345" or "pmid:31234567"; matched by Finding.source_ids
+    doi: str | None = None
+    pmid: str | None = None
+    title: str
+    authors: list[str]
+    year: int | None = None
+    venue: str | None = None  # journal name, or "PsyArXiv" for preprints
+    url: str
+    database: Literal["pubmed", "openalex", "psyarxiv"]
+    preprint: bool = False
+    retrieved_at: str
+
+
+class Effect(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    metric: str  # e.g. "OR", "beta", "r", "SMD"
+    value: float
+    ci95: tuple[float, float] | None = None
+
+
+class EvidenceStrength(BaseModel):
+    """Computed in Python by the evidence-strength rubric, never by the model."""
+
+    model_config = ConfigDict(extra="forbid")
+    score: int
+    tier: Literal["strong", "moderate", "weak"]
+    reasons: list[str]
+
+
+class StudyEvidence(BaseModel):
+    """Evidence shape for literature findings; stored in Finding.evidence via model_dump()."""
+
+    model_config = ConfigDict(extra="forbid")
+    paper_id: str  # PaperSource.id
+    design: Literal["meta_analysis", "rct", "longitudinal", "cross_sectional", "ecological", "qualitative", "other"]
+    n: int | None = None
+    effect: Effect | None = None
+    preregistered: bool | None = None  # None when the paper does not say
+    quote: str  # exact sentence from the fetched abstract that supports the extraction
+    strength: EvidenceStrength | None = None
+
+
 class Finding(BaseModel):
     """Shared handoff contract; all numerical findings are made by tools, not the LLM."""
 
@@ -39,7 +86,9 @@ class Finding(BaseModel):
     claim: str
     evidence: dict
     source_ids: list[str]
-    confidence: Literal["descriptive", "exploratory", "insufficient"]
+    # descriptive/exploratory/insufficient: data agents; literature_*: literature agent, from the rubric tier
+    confidence: Literal["descriptive", "exploratory", "insufficient",
+                        "literature_strong", "literature_moderate", "literature_weak"]
     caveats: list[str]
 
 
@@ -54,7 +103,7 @@ class AgentResult(BaseModel):
     question: str
     status: Literal["ok", "needs_clarification", "insufficient"]
     findings: list[Finding]
-    sources: list[Source]
+    sources: list[Source | PaperSource]
     gaps: list[str] = Field(default_factory=list)
     clarification: str | None = None
 
@@ -285,7 +334,8 @@ class WorkContext:
             allowed = {"built_environment": {"walkability", "amenities_per_1000", "amenities_count",
                                               "park_access_pct", "park_population_coverage_pct"},
                        "health_demographics": {"distress_pct", "population", "poverty_pct", "income", "age65_pct", "black_pct", "hispanic_pct"},
-                       "analyst": set(self.catalog.frame.columns) - {"geoid", "metro"}}[self.role]
+                       "analyst": set(self.catalog.frame.columns) - {"geoid", "metro"},
+                       "literature": set()}[self.role]  # literature does not profile the dataset
             columns = arguments["columns"]
             if not columns or not set(columns) <= allowed:
                 raise ValueError(f"Choose profile columns available to {self.role}: {sorted(allowed)}")
