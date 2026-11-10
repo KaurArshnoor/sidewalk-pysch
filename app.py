@@ -369,6 +369,7 @@ def create_verifier():
 
 class VerifiedReport(BaseModel):
     markdown: str
+    view: dict = Field(default_factory=dict)  # report.page_view(): the same report as data for the page
     report: dict
     citations: list[dict]
     removed: list[str]
@@ -379,7 +380,7 @@ async def write_verified_report(question: str, results: list[AgentResult], *, ho
                                 max_revisions: int = 1, client=None) -> VerifiedReport:
     """Citation checks → Writer → Verifier → revise. Flagged sentences left at the end are removed."""
     from agents import Runner
-    from report import pool, render
+    from report import page_view, pool, render
     from verify import (all_problems, check_citations, citation_notes, exclude_bad_sources,
                         feedback, remove_flagged, verifier_prompt)
 
@@ -401,7 +402,8 @@ async def write_verified_report(question: str, results: list[AgentResult], *, ho
     if removed:
         notes.append(f"Removed {len(removed)} sentence(s) that did not pass verification; see Open gaps.")
     markdown = render(report, results, extra_gaps=excluded + removed, verification=notes)
-    return VerifiedReport(markdown=markdown, report=report.model_dump(), citations=[c.model_dump() for c in checks],
+    view = page_view(report, results, extra_gaps=excluded + removed, verification=notes)
+    return VerifiedReport(markdown=markdown, view=view, report=report.model_dump(), citations=[c.model_dump() for c in checks],
                           removed=removed, rounds=round_number)
 
 

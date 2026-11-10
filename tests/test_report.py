@@ -106,6 +106,31 @@ def test_paper_source_rendering_and_literature_section():
     assert "[Preprint] https://doi.org/10.1/walk" in markdown
 
 
+def test_page_view_matches_markdown_numbering(results, analyst):
+    import re
+    from report import REMOVED, page_view
+    lit = literature_result()
+    draft = Report(sections=[
+        Section(heading="What the literature says", sentences=[
+            Sentence(text="One cohort study suggests lower depression odds.", finding_ids=["f-lit"], hedge="suggests")]),
+        Section(heading="What our data show", sentences=[
+            Sentence(text="In this exploratory model the association is negative.", finding_ids=[analyst.id],
+                     hedge="exploratory")])], gaps=[])
+    removed = f'{REMOVED} from What our data show: "x" (overstated)'
+    kwargs = dict(extra_gaps=["Excluded retracted study: y.", removed], verification=["Checked 1 paper."])
+    view, markdown = page_view(draft, results + [lit], **kwargs), render(draft, results + [lit], **kwargs)
+    json.dumps(view)  # sent to the page as JSON
+    sentences = [s for sec in view["sections"] for s in sec["sentences"]]
+    assert sentences[0]["citations"] == [1] and sentences[0]["hedge"] == "suggests"
+    assert "[1]." in markdown and all(f"[{', '.join(map(str, s['citations']))}]" in markdown for s in sentences)
+    numbered = re.findall(r"^(\d+)\. ", markdown.split("## References")[1], flags=re.M)
+    assert [str(r["n"]) for r in view["references"]] == numbered
+    paper = view["references"][0]
+    assert paper["kind"] == "paper" and paper["url"] == "https://doi.org/10.1/walk" and paper["preprint"]
+    assert "Excluded retracted study: y." in view["gaps"] and view["removed"] == [removed]
+    assert view["verification"] == ["Checked 1 paper."]
+
+
 def test_prompt_lists_findings_once_and_flags_missing_literature(results):
     prompt = writer_prompt("Is walkability associated with distress?", results, feedback=["fix this"])
     findings, _, _ = pool(results)

@@ -255,6 +255,9 @@ async def test_orchestrate_end_to_end(monkeypatch, results):
     assert out.report is not None and out.report.removed == [] and out.report.rounds == 1
     assert "## Where they agree or disagree" in out.report.markdown
     assert "built environment agent did not finish" in out.report.markdown
+    compare_section = next(s for s in out.report.view["sections"] if s["heading"] == "Where they agree or disagree")
+    assert compare_section["sentences"][0]["verdicts"] == ["agrees"]  # the page shows this as a chip
+    assert any("did not finish" in g for g in out.report.view["gaps"])
     writer_prompt_text = next(p for name, p in prompts if name == "writer")
     assert comparison.id in writer_prompt_text
 

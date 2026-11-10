@@ -15,6 +15,56 @@
   pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;color:#263b31}summary{cursor:pointer}#status{font-size:14px;margin-left:12px}
   #activity{font-size:13px}#response{white-space:pre-wrap;font-size:14px}.muted{color:#65776c;font-size:13px}
   @media(max-width:600px){h1{font-size:36px}main{padding:24px 16px}section{padding:18px}}
+  /* Readable report (full study) */
+  #report{max-width:760px}#report[hidden]{display:none}
+  .report-bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;font-size:13px;color:#65776c;border-bottom:1px solid #e2e6dc;padding-bottom:12px;margin-bottom:8px}
+  .report-bar button{margin:0;padding:6px 12px;font-size:13px;background:white;color:#285f4b;border:1px solid #a8b9ac}
+  .report-bar label{display:inline-flex;gap:6px;align-items:center;margin:0;font-weight:400}
+  .legend span{margin-left:8px;padding-bottom:1px}
+  .rsec{margin:26px 0 0;background:none;border:0;padding:0;border-radius:0}.rsec h3{font-family:Georgia,serif;font-weight:400;font-size:22px;margin:0 0 8px;color:#18362e}
+  .rsec p,.rsec li{font-size:16px;line-height:1.7;max-width:none}.rsec.question p{font-size:18px;font-style:italic;color:#264c3f}
+  .cite{font-size:11px;margin-left:1px}.cite a{text-decoration:none;color:#285f4b;font-weight:600}.cite a:hover{text-decoration:underline}
+  .show-hedge .h-suggests{text-decoration:underline solid #9cc2ae 2px;text-underline-offset:4px}
+  .show-hedge .h-exploratory{text-decoration:underline dotted #b7903d 2px;text-underline-offset:4px}
+  .show-hedge .h-unknown{text-decoration:underline dashed #9aa59d 2px;text-underline-offset:4px}
+  .legend .h-suggests,.legend .h-exploratory,.legend .h-unknown{text-decoration-thickness:2px}
+  .comparisons{list-style:none;padding:0;margin:0}.comparisons li{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;padding:12px 0;border-top:1px solid #e9ece4}
+  .comparisons li:first-child{border-top:0}.comparisons .s{flex:1 1 320px}
+  .chip{display:inline-block;flex:none;font-size:12px;font-weight:600;letter-spacing:.02em;padding:2px 10px;border-radius:12px;border:1px solid}
+  .chip.agrees{background:#e3f1e8;border-color:#7fb493;color:#1f5a3a}.chip.conflicts{background:#fdf0dc;border-color:#d9a75a;color:#7a4a0c}
+  .chip.na{background:#eef0ec;border-color:#c3c9c0;color:#4c5a51}.chip.unclear{background:white;border-color:#a8b9ac;border-style:dashed;color:#4c5a51}
+  .limits{padding-left:20px;margin:0}.limits li{margin:4px 0}
+  .gaps{margin-top:28px;background:#fbf6e8;border:1px solid #eadcae;border-left:4px solid #c9a44c;border-radius:6px;padding:14px 18px}
+  .gaps h3{font-family:inherit;font-size:15px;font-weight:600;margin:0 0 6px}.gaps ul{margin:0;padding-left:20px}.gaps li{font-size:14px;margin:4px 0}
+  .refs{font-size:14px;padding-left:24px}.refs li{margin:6px 0;scroll-margin-top:20px}.refs li:target{background:#fff1c5;border-radius:4px}
+  .refs .venue{font-style:italic}.refs .tag{font-size:11px;border:1px solid #b7a05d;background:#fff1c5;border-radius:10px;padding:0 6px;margin-left:4px}
+  .report-details{margin-top:18px;font-size:14px}.report-details ul{padding-left:20px}
+  .agent-status{list-style:none;padding:0}.agent-status li{margin:6px 0}.agent-status .chip{margin-right:8px;min-width:72px;text-align:center}
+  /* Finding cards (single agents) */
+  #cards{max-width:820px}#cards[hidden]{display:none}
+  .cards-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline;border-bottom:1px solid #e2e6dc;padding-bottom:10px;margin-bottom:6px}
+  .cards-head strong{font-family:Georgia,serif;font-weight:400;font-size:22px}.cards-head span{font-size:13px;color:#65776c}
+  .card{background:white;border:1px solid #dfe4da;border-left:4px solid #285f4b;border-radius:6px;padding:16px 18px;margin:14px 0}
+  .card.k-exploratory,.card.k-literature_weak{border-left-color:#c9a44c}.card.k-insufficient{border-left-color:#a8b1aa}
+  .card.k-literature_moderate{border-left-color:#7fb493}
+  .card-top{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-bottom:8px}
+  .card-top .kind{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#65776c;margin-right:4px}
+  .card .claim{font-size:16px;line-height:1.6;margin:0 0 10px;max-width:none}
+  .chip.descriptive,.chip.literature_strong{background:#e3f1e8;border-color:#7fb493;color:#1f5a3a}
+  .chip.exploratory,.chip.literature_weak{background:#fdf0dc;border-color:#d9a75a;color:#7a4a0c}
+  .chip.literature_moderate{background:#eef6f0;border-color:#9cc2ae;color:#265c40}.chip.insufficient{background:#eef0ec;border-color:#c3c9c0;color:#4c5a51}
+  .chip.neutral{background:#f4f3eb;border-color:#d7ddd2;color:#4c5a51;font-weight:500}
+  .estimate{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;margin:4px 0 10px}
+  .estimate .big{font-family:Georgia,serif;font-size:30px;color:#18362e}.estimate .unit{font-size:13px;color:#4c5a51;max-width:420px}
+  .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 16px;margin:8px 0 4px;padding:0;list-style:none}
+  .facts li{font-size:13px;color:#4c5a51}.facts b{display:block;font-size:15px;color:#18362e;font-weight:600}
+  .stats{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0}.stats-wrap{overflow-x:auto}
+  .stats th,.stats td{text-align:right;padding:6px 10px;border-bottom:1px solid #eef0ea;white-space:nowrap}
+  .stats th:first-child,.stats td:first-child{text-align:left;white-space:normal}.stats th{font-size:12px;color:#65776c;font-weight:600}
+  .quote{margin:8px 0 10px;padding:8px 14px;border-left:3px solid #c3d3c8;background:#f7f8f3;font-size:14px;font-style:italic;color:#2c4339}
+  .card details{margin:8px 0 0;font-size:13px}.card details ul{padding-left:18px;margin:6px 0}.card details li{margin:3px 0}
+  .card .srcs{font-size:13px;margin:8px 0 0;color:#4c5a51}.card .srcs a{margin-right:10px}
+  .note-box{background:#eef4ef;border:1px solid #c9dccf;border-radius:6px;padding:12px 16px;margin:14px 0;font-size:15px}
 </style>
 <main>
   <header><div class="eyebrow">Data exploration agents</div><h1>Sidewalk Psych</h1>
@@ -31,7 +81,7 @@
       <label for="question">Question</label><textarea id="question" maxlength="2000">Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?</textarea>
       <button id="run">Explore data</button><span id="status" role="status"></span></form>
   </section>
-  <section><h2>Findings</h2><p id="scope" class="muted"></p><div id="response">The selected agent's tool-supported findings will appear here.</div>
+  <section><h2>Findings</h2><p id="scope" class="muted"></p><article id="report" hidden></article><div id="cards" hidden></div><div id="response">The selected agent's tool-supported findings will appear here.</div>
     <details><summary>Tool activity and model context</summary><ol id="activity"></ol><div id="context-container"></div></details>
     <details><summary>Sources</summary><ul id="sources"></ul></details><details><summary>Structured findings and caveats</summary><pre id="findings">No run yet.</pre></details>
     <details><summary>Tool calls · includes agent names</summary><pre id="tools">No run yet.</pre></details></section>
@@ -40,14 +90,277 @@
 </main>
 <script src="/context-panel.js"></script>
 <script>
+  // Readable report for a full study, built from report.view (same structure and numbering as the Markdown).
+  // All text comes from model output and paper metadata, so it is inserted as text, never as HTML.
+  function el(tag, attrs = {}, ...children) {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(attrs)) {
+      if (value == null) continue;
+      if (key === 'class') node.className = value;
+      else if (key === 'text') node.textContent = value;
+      else node.setAttribute(key, value);
+    }
+    for (const child of children) if (child != null) node.append(child);
+    return node;
+  }
+  function safeUrl(url) {
+    try { const parsed = new URL(url); return ['https:', 'http:'].includes(parsed.protocol) ? parsed.href : null; }
+    catch { return null; }
+  }
+  const HEDGE = {
+    established: 'Established: the cited evidence supports a direct statement',
+    suggests: 'Suggests: moderate evidence, worded tentatively',
+    exploratory: 'Exploratory: weak or exploratory evidence; a lead, not a conclusion',
+    unknown: 'Unknown: the evidence cannot answer this',
+  };
+  const VERDICT = {
+    agrees: ['Agrees', 'agrees'], conflicts: ['Conflicts', 'conflicts'],
+    not_comparable: ['Not comparable', 'na'], direction_unclear: ['Direction unclear', 'unclear'],
+  };
+  const AGENT_LABEL = {
+    built_environment: 'Built environment', health_demographics: 'Health & demographics',
+    analyst: 'Analyst', literature: 'Literature',
+  };
+
+  function sentence(item, withHedge = true) {
+    const span = el('span', withHedge ? { class: 's h-' + item.hedge, title: HEDGE[item.hedge] } : { class: 's' }, item.text);
+    if (item.citations.length) {
+      const sup = el('sup', { class: 'cite' });
+      item.citations.forEach((n, i) => {
+        if (i) sup.append(',');
+        sup.append(el('a', { href: '#ref-' + n, text: String(n), title: 'Reference ' + n }));
+      });
+      span.append(sup);
+    }
+    return span;
+  }
+
+  function reference(ref) {
+    const li = el('li', { id: 'ref-' + ref.n });
+    const url = safeUrl(ref.url);
+    if (ref.kind === 'paper') {
+      li.append(`${ref.authors} (${ref.year || 'n.d.'}). ${ref.title}. `, el('span', { class: 'venue', text: ref.venue }), '.');
+      if (ref.preprint) li.append(el('span', { class: 'tag', text: 'Preprint' }));
+    } else {
+      li.append(`${ref.title}. ${ref.release}.`);
+    }
+    if (url) li.append(' ', el('a', { href: url, target: '_blank', rel: 'noopener noreferrer', text: url.replace(/^https?:\/\//, '') }));
+    if (ref.retrieved) li.append(` (retrieved ${ref.retrieved})`);
+    return li;
+  }
+
+  function renderReport(report, agents) {
+    const view = report.view, root = $('report');
+    root.replaceChildren();
+
+    const toggle = el('input', { type: 'checkbox', id: 'hedge-toggle', checked: '' });
+    toggle.onchange = () => root.classList.toggle('show-hedge', toggle.checked);
+    const copy = el('button', { type: 'button', text: 'Copy as Markdown' });
+    copy.onclick = () => navigator.clipboard.writeText(report.markdown).then(
+      () => { copy.textContent = 'Copied'; setTimeout(() => copy.textContent = 'Copy as Markdown', 1500); },
+      () => { copy.textContent = 'Copy failed'; });
+    const legend = el('span', { class: 'legend' }, 'Wording:',
+      ...['suggests', 'exploratory', 'unknown'].map(h => el('span', { class: 'h-' + h, title: HEDGE[h], text: h })));
+    root.append(el('div', { class: 'report-bar' },
+      el('label', {}, toggle, 'Show how strongly each sentence is worded'), legend, copy));
+    root.classList.add('show-hedge');
+
+    for (const section of view.sections) {
+      const heading = section.heading;
+      const block = el('section', { class: 'rsec' + (heading === 'Question' ? ' question' : '') }, el('h3', { text: heading }));
+      if (heading === 'Where they agree or disagree') {
+        const list = el('ul', { class: 'comparisons' });
+        for (const item of section.sentences) {
+          list.append(el('li', {}, ...item.verdicts.map(v => el('span', { class: 'chip ' + (VERDICT[v] || ['', 'na'])[1], text: (VERDICT[v] || [v])[0] })), sentence(item)));
+        }
+        block.append(list);
+      } else if (heading === 'Limitations and caveats') {
+        block.append(el('ul', { class: 'limits' }, ...section.sentences.map(item => el('li', {}, sentence(item)))));
+      } else {
+        const paragraph = el('p');
+        section.sentences.forEach((item, i) => { if (i) paragraph.append(' '); paragraph.append(sentence(item, heading !== 'Question')); });
+        block.append(paragraph);
+      }
+      root.append(block);
+    }
+
+    if (view.gaps.length) {
+      root.append(el('div', { class: 'gaps' }, el('h3', { text: "What we couldn't answer" }),
+        el('ul', {}, ...view.gaps.map(g => el('li', { text: g })))));
+    }
+
+    if (view.references.length) {
+      root.append(el('section', { class: 'rsec' }, el('h3', { text: 'References' }),
+        el('ol', { class: 'refs' }, ...view.references.map(reference))));
+    }
+
+    const checked = el('details', { class: 'report-details' }, el('summary', { text: 'How this report was checked' }),
+      el('ul', {}, ...view.verification.map(note => el('li', { text: note }))));
+    if (view.removed.length) {
+      checked.append(el('p', { text: 'Sentences the Verifier removed:' }),
+        el('ul', {}, ...view.removed.map(g => el('li', { text: g }))));
+    }
+    root.append(checked);
+
+    if (agents && agents.length) {
+      const statusClass = { ok: 'agrees', partial: 'conflicts', error: 'conflicts', insufficient: 'na', needs_clarification: 'unclear' };
+      root.append(el('details', { class: 'report-details' }, el('summary', { text: 'How this study ran' }),
+        el('ul', { class: 'agent-status' }, ...agents.map(a => el('li', {},
+          el('span', { class: 'chip ' + (statusClass[a.status] || 'na'), text: a.status }),
+          el('strong', { text: (AGENT_LABEL[a.role] || a.role) + ': ' }),
+          `${a.sub_question} (${a.findings} finding${a.findings === 1 ? '' : 's'}${a.error ? '; ' + a.error : ''})`)))));
+    }
+
+    root.hidden = false;
+    $('response').hidden = true;
+  }
+
+  // Finding cards for a single agent's result (claim, evidence, sources, confidence, caveats).
+  const CONFIDENCE = {
+    descriptive: 'Descriptive', exploratory: 'Exploratory', insufficient: 'Insufficient',
+    literature_strong: 'Strong evidence', literature_moderate: 'Moderate evidence', literature_weak: 'Weak evidence',
+  };
+  const MEASURE = {
+    walkability: 'EPA walkability score (1–20)', distress_pct: 'Modeled frequent mental distress (%)',
+    poverty_pct: 'Poverty (%)', income: 'Median household income ($)', park_access_pct: 'Estimated park access (%)',
+    amenities_per_1000: 'Mapped gathering places per 1,000 residents', amenities_count: 'Mapped gathering places',
+    population: 'Tract population',
+  };
+  const DESIGN = {
+    meta_analysis: 'Meta-analysis', rct: 'Randomized trial', longitudinal: 'Longitudinal', cross_sectional: 'Cross-sectional',
+    ecological: 'Ecological', qualitative: 'Qualitative', other: 'Other design',
+  };
+  const fmt = (value, digits = 2) => value == null || Number.isNaN(value) ? '—'
+    : Number(value).toLocaleString(undefined, { maximumFractionDigits: digits, minimumFractionDigits: Math.abs(value) >= 1000 ? 0 : digits });
+  const signed = value => (value > 0 ? '+' : value < 0 ? '−' : '') + Math.abs(value).toFixed(4);
+  const measure = name => MEASURE[name] || name.replace(/_pct$/, ' (%)').replace(/_/g, ' ');
+
+  function facts(pairs) {
+    return el('ul', { class: 'facts' }, ...pairs.filter(([, v]) => v != null && v !== '').map(([label, value]) => el('li', {}, el('b', { text: value }), label)));
+  }
+
+  function coverageBody(ev) {
+    return [facts([['tracts', fmt(ev.rows, 0)], ['metro areas', fmt((ev.metros || []).length, 0)],
+      ['geography', ev.geography_id], ['data', ev.synthetic ? 'synthetic test fixture' : 'real study snapshot']]),
+      ev.scope && ev.scope.description ? el('p', { class: 'muted', text: ev.scope.description }) : null];
+  }
+
+  function statisticsBody(ev) {
+    const rows = Object.entries(ev.statistics).map(([name, s]) => el('tr', {},
+      el('td', { text: measure(name) }), el('td', { text: fmt(s.mean) }), el('td', { text: fmt(s.median) }),
+      el('td', { text: s.min == null ? '—' : `${fmt(s.min)} – ${fmt(s.max)}` }),
+      el('td', { text: fmt(s.n, 0) }), el('td', { text: fmt(s.missing, 0) })));
+    const table = el('table', { class: 'stats' },
+      el('thead', {}, el('tr', {}, ...['Measure', 'Mean', 'Median', 'Range', 'Tracts', 'Missing'].map(h => el('th', { text: h })))),
+      el('tbody', {}, ...rows));
+    return [el('div', { class: 'stats-wrap' }, table),
+      el('p', { class: 'muted', text: `Unweighted across ${fmt(ev.n_tracts, 0)} tracts in ${fmt(ev.n_metros, 0)} metro area${ev.n_metros === 1 ? '' : 's'}.` })];
+  }
+
+  function associationBody(ev) {
+    const unit = ev.moderator
+      ? `change in the walkability slope per 10 percentage points of ${measure(ev.moderator).replace(' (%)', '').toLowerCase()}`
+      : 'percentage points of modeled distress per 1-point higher walkability';
+    const ci = ev.ci95, crossesZero = ci && ci[0] <= 0 && 0 <= ci[1];
+    const interval = ci ? `95% interval ${signed(ci[0])} to ${signed(ci[1])}` : 'No interval: fewer than 10 metro clusters';
+    const parts = [
+      el('div', { class: 'estimate' }, el('span', { class: 'big', text: signed(ev.estimate) }), el('span', { class: 'unit', text: unit })),
+      el('div', { class: 'card-top' }, el('span', { class: 'chip neutral', text: interval }),
+        ci ? el('span', { class: 'chip ' + (crossesZero ? 'unclear' : 'agrees'),
+          text: crossesZero ? 'Interval includes zero: direction uncertain' : 'Interval excludes zero' }) : null),
+      facts([['tracts used', fmt(ev.n_complete, 0)], ['excluded (missing data)', fmt(ev.n_excluded, 0)],
+        ['metro areas', fmt(ev.n_metros, 0)], ['p-value', ev.p_value == null ? null : fmt(ev.p_value, 3)]]),
+    ];
+    const method = [ev.formula && `Model: ${ev.formula}`, ev.standard_errors && `Standard errors: ${ev.standard_errors}`,
+      ev.weighting && `Weighting: ${ev.weighting}`,
+      ev.residual_spatial_diagnostic && ev.residual_spatial_diagnostic.reason && `Spatial diagnostic: ${ev.residual_spatial_diagnostic.reason}`].filter(Boolean);
+    if (method.length) parts.push(el('details', {}, el('summary', { text: 'Model details' }), el('ul', {}, ...method.map(m => el('li', { text: m })))));
+    return parts;
+  }
+
+  function studyBody(ev) {
+    const effect = ev.effect;
+    const parts = [el('div', { class: 'card-top' },
+      el('span', { class: 'chip neutral', text: DESIGN[ev.design] || ev.design }),
+      ev.preregistered ? el('span', { class: 'chip neutral', text: 'Preregistered' }) : null)];
+    parts.push(facts([['exposure', ev.exposure], ['outcome', ev.outcome], ['sample size', ev.n == null ? 'not stated' : fmt(ev.n, 0)],
+      ['reported effect', effect ? `${effect.metric} ${effect.value}${effect.ci95 ? ` (95% CI ${effect.ci95[0]} to ${effect.ci95[1]})` : ''}` : 'none quoted']]));
+    if (ev.quote) parts.push(el('blockquote', { class: 'quote', text: '“' + ev.quote + '”' }));
+    if (ev.strength && ev.strength.reasons) {
+      parts.push(el('details', {}, el('summary', { text: `Why this rating (score ${ev.strength.score})` }),
+        el('ul', {}, ...ev.strength.reasons.map(r => el('li', { text: r })))));
+    }
+    return parts;
+  }
+
+  function findingCard(finding, sources, shared) {
+    const ev = finding.evidence || {};
+    let kind = 'Finding', body = [];
+    if ('estimate' in ev) {
+      kind = (ev.adjusted ? 'Adjusted' : 'Unadjusted') + ' association' + (ev.moderator ? ' · interaction' : '');
+      body = associationBody(ev);
+    } else if (ev.statistics) { kind = 'Summary statistics'; body = statisticsBody(ev); }
+    else if ('rows' in ev && 'metros' in ev) { kind = 'Dataset coverage'; body = coverageBody(ev); }
+    else if (finding.agent === 'literature' && ev.design) { kind = 'Published study'; body = studyBody(ev); }
+    const showClaim = !ev.statistics;  // the statistics table already says what the claim says
+    const card = el('article', { class: 'card k-' + finding.confidence },
+      el('div', { class: 'card-top' }, el('span', { class: 'kind', text: kind }),
+        el('span', { class: 'chip ' + finding.confidence, text: CONFIDENCE[finding.confidence] || finding.confidence })),
+      showClaim ? el('p', { class: 'claim', text: finding.claim.split(' Abstract: "')[0] }) : null,
+      ...body);
+    const own = finding.caveats.filter(c => !shared.has(c) && !c.startsWith('Raw file SHA256s:'));
+    if (own.length) {
+      card.append(el('details', {}, el('summary', { text: `Caveats for this finding (${own.length})` }),
+        el('ul', {}, ...own.map(c => el('li', { text: c })))));
+    }
+    const links = finding.source_ids.map(id => sources[id]).filter(Boolean).map(s => {
+      const url = safeUrl(s.doi ? 'https://doi.org/' + s.doi : s.url);
+      const label = s.authors ? `${(s.authors[0] || 'Unknown').split(' ').slice(-1)[0]}${s.authors.length > 1 ? ' et al.' : ''} ${s.year || 'n.d.'}` : s.title;
+      return url ? el('a', { href: url, target: '_blank', rel: 'noopener noreferrer', title: s.title, text: label }) : el('span', { text: label });
+    });
+    if (links.length) card.append(el('p', { class: 'srcs' }, 'Sources: ', ...links));
+    return card;
+  }
+
+  function renderFindings(event) {
+    const result = event.result, root = $('cards');
+    root.replaceChildren();
+    const sources = Object.fromEntries(result.sources.map(s => [s.id, s]));
+    // Caveats on every finding are dataset-wide notes: show them once, below the cards.
+    const lists = result.findings.map(f => f.caveats.filter(c => !c.startsWith('Raw file SHA256s:')));
+    const shared = new Set(lists.length > 1 ? lists[0].filter(c => lists.every(l => l.includes(c))) : []);
+    const label = AGENT_LABEL[result.agent] || result.agent;
+    root.append(el('div', { class: 'cards-head' }, el('strong', { text: label }),
+      el('span', { text: `${result.findings.length} finding${result.findings.length === 1 ? '' : 's'} · status: ${result.status.replace('_', ' ')}` })));
+    if (result.clarification) root.append(el('div', { class: 'note-box' }, el('strong', { text: 'Clarifying question: ' }), result.clarification));
+    for (const finding of result.findings) root.append(findingCard(finding, sources, shared));
+    if (!result.findings.length && !result.clarification) root.append(el('p', { class: 'muted', text: 'No supported finding is available for this question.' }));
+    if (result.gaps.length) {
+      root.append(el('div', { class: 'gaps' }, el('h3', { text: "What we couldn't answer" }),
+        el('ul', {}, ...result.gaps.map(g => el('li', { text: g })))));
+    }
+    if (shared.size) {
+      root.append(el('details', { class: 'report-details' }, el('summary', { text: `Notes that apply to all findings (${shared.size})` }),
+        el('ul', {}, ...[...shared].map(c => el('li', { text: c })))));
+    }
+    if (event.response) {
+      root.append(el('details', { class: 'report-details' }, el('summary', { text: 'Plain-text summary' }),
+        el('pre', { text: event.response })));
+    }
+    root.hidden = false;
+    $('response').hidden = true;
+  }
+</script>
+<script>
   const $=id=>document.getElementById(id); let source=null,runId=null;
   $('context-container').appendChild(document.getElementById('context-panel'));
   const traceStyle=document.createElement('style');traceStyle.textContent='body{margin-right:0}#context-panel,#context-panel.timeline{position:static;width:100%;height:auto;max-height:560px;border:0;padding:12px}details{margin:14px 0}a{color:#285f4b}';document.head.appendChild(traceStyle);
   const samples={built_environment:'What walkability and park-access measures are available, and what are their limits?',health_demographics:'What do CDC frequent mental distress and ACS poverty measure in this snapshot?',analyst:'Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?',literature:'What does published research report about neighborhood walkability and loneliness or depression? Include study designs and sample sizes.',study:'Are more walkable neighborhoods associated with lower frequent mental distress after adjustment, and how does that compare with published research on walkability, depression and loneliness?'};
   function addSources(items){for(const item of items){const url=new URL(item.url);if(!['https:','http:'].includes(url.protocol))continue;const li=document.createElement('li'),link=document.createElement('a');link.href=url.href;link.textContent=item.title;link.target='_blank';link.rel='noopener noreferrer';li.appendChild(link);$('sources').appendChild(li)}}
   function showStudy(event){const seen=new Set(),sources=[];for(const r of event.results)for(const s of r.sources)if(!seen.has(s.id)){seen.add(s.id);sources.push(s)}addSources(sources);
-    const plan=event.agents.map(a=>`- ${a.role}: ${a.status}${a.error?' ('+a.error+')':` (${a.findings} findings)`} · ${a.sub_question}`).join('\n');
-    $('response').textContent=(event.report?event.report.markdown:event.clarification)+(plan?'\n\n---\nPlan\n'+plan:'');
+    if(event.report&&event.report.view&&event.report.view.sections){try{renderReport(event.report,event.agents)}catch(err){console.error(err);$('report').hidden=true;$('response').hidden=false;$('response').textContent=event.report.markdown}}
+    else{const plan=event.agents.map(a=>`- ${a.role}: ${a.status}${a.error?' ('+a.error+')':` (${a.findings} findings)`} · ${a.sub_question}`).join('\n');
+      $('response').textContent=(event.report?event.report.markdown:event.clarification)+(plan?'\n\n---\nPlan\n'+plan:'')}
     $('findings').textContent=JSON.stringify(event.results,null,2);$('tools').textContent=JSON.stringify({plan:event.plan,notes:event.plan_notes,agents:event.agents},null,2)}
   $('agent').onchange=()=>{$('question').value=samples[$('agent').value]};
   fetch('/metadata').then(r=>{if(!r.ok)throw Error('Snapshot unavailable');return r.json()}).then(m=>{
@@ -56,7 +369,7 @@
     for(const metro of m.scope.metro_lookup){const option=document.createElement('option');option.value=metro.metro;option.textContent=metro.name;$('metro').appendChild(option)}
   }).catch(e=>{$('mode').textContent=e.message});
   function finish(text){$('status').textContent=text;$('run').disabled=false;if(source)source.close()}
-  $('task').onsubmit=e=>{e.preventDefault();if(source)source.close();resetContext();$('run').disabled=true;$('status').textContent='Running…';$('activity').replaceChildren();$('scope').textContent=$('metro').selectedOptions[0].textContent;$('response').textContent='Analyzing the selected scope…';$('sources').replaceChildren();$('findings').textContent='Running…';$('tools').textContent='Running…';
+  $('task').onsubmit=e=>{e.preventDefault();if(source)source.close();resetContext();$('report').hidden=true;$('report').replaceChildren();$('cards').hidden=true;$('cards').replaceChildren();$('response').hidden=false;$('run').disabled=true;$('status').textContent='Running…';$('activity').replaceChildren();$('scope').textContent=$('metro').selectedOptions[0].textContent;$('response').textContent='Analyzing the selected scope…';$('sources').replaceChildren();$('findings').textContent='Running…';$('tools').textContent='Running…';
     const study=$('agent').value==='study',params=new URLSearchParams({question:$('question').value.trim()});
     if(!study)params.set('agent',$('agent').value);
     if($('metro').value)params.set('metro',$('metro').value);
@@ -66,7 +379,7 @@
       if(event.type==='context')showContext(runId);
       if(event.type==='activity'){const li=document.createElement('li');li.textContent=event.agent+': '+event.text;$('activity').appendChild(li)}
       if(event.type==='done'&&study){showStudy(event);finish('Done');return}
-      if(event.type==='done'){addSources(event.result.sources);$('response').textContent=event.response;$('findings').textContent=JSON.stringify(event.result,null,2);$('tools').textContent=JSON.stringify(event.tool_calls,null,2);finish('Done')}
+      if(event.type==='done'){addSources(event.result.sources);$('response').textContent=event.response;try{renderFindings(event)}catch(err){console.error(err);$('cards').hidden=true;$('response').hidden=false}$('findings').textContent=JSON.stringify(event.result,null,2);$('tools').textContent=JSON.stringify(event.tool_calls,null,2);finish('Done')}
       if(event.type==='error'){$('response').textContent=event.message;finish('Failed')}
     };source.onerror=()=>finish('Connection lost');
   };

@@ -145,32 +145,81 @@ def format_source(source: Source | PaperSource) -> str:
     return f"{source.title}. {source.release}. {source.url} (retrieved {source.retrieved_at[:10]})."
 
 
-def render(report: Report, results: list[AgentResult], *, extra_gaps: list[str] = (),
-           verification: list[str] = ()) -> str:
-    """Markdown with numbered source citations, Open gaps from every agent, Verification notes, and References."""
+REMOVED = "Removed an unverified statement"  # prefix of verify.remove_flagged gaps
+
+
+def reference(source: Source | PaperSource, number: int) -> dict:
+    """One reference for the page: plain text (no Markdown) and its link kept separate."""
+    if isinstance(source, PaperSource):
+        authors = ", ".join(source.authors[:3]) + (" et al." if len(source.authors) > 3 else "")
+        return {"n": number, "kind": "paper", "authors": authors or "Unknown authors", "year": source.year,
+                "title": source.title, "venue": source.venue or source.database, "preprint": source.preprint,
+                "url": f"https://doi.org/{source.doi}" if source.doi else source.url}
+    return {"n": number, "kind": "dataset", "title": source.title, "release": source.release,
+            "url": source.url, "retrieved": source.retrieved_at[:10]}
+
+
+def structure(report: Report, results: list[AgentResult], *, extra_gaps: list[str] = (),
+              verification: list[str] = ()) -> dict:
+    """The report as data for the page; render() turns the same structure into Markdown, so numbers match.
+
+    Each sentence carries its citation numbers, its wording level (hedge) and, for comparisons, the
+    reconciler verdicts it reports. Gaps are split into open questions and sentences removed by the Verifier.
+    """
     findings, sources, gaps = pool(results)
     numbers: dict[str, int] = {}
 
-    def cite(finding_ids: list[str]) -> str:
+    def cite(finding_ids: list[str]) -> list[int]:
         ids = list(dict.fromkeys(s for f in finding_ids for s in findings[f].source_ids if s in sources))
         for source_id in ids:
             numbers.setdefault(source_id, len(numbers) + 1)
-        return f" [{', '.join(str(numbers[s]) for s in ids)}]" if ids else ""
+        return [numbers[s] for s in ids]
 
-    blocks = []
+    sections = []
     for section in report.sections:
-        if section.sentences:
-            body = " ".join(_cited(s.text, cite(s.finding_ids)) for s in section.sentences)
-            blocks += [f"## {section.heading}", body]
-    blocks.append("## Open gaps")
+        if not section.sentences:
+            continue
+        sentences = []
+        for s in section.sentences:
+            verdicts = list(dict.fromkeys(findings[f].evidence["verdict"] for f in s.finding_ids
+                                          if f in findings and findings[f].agent == "reconciler"))
+            sentences.append({"text": s.text.strip(), "hedge": s.hedge, "citations": cite(s.finding_ids),
+                              "verdicts": verdicts})
+        sections.append({"heading": section.heading, "sentences": sentences})
     all_gaps = list(dict.fromkeys(gaps + report.gaps + list(extra_gaps)))
+    return {"sections": sections,
+            "gaps": [g for g in all_gaps if not g.startswith(REMOVED)],
+            "removed": [g for g in all_gaps if g.startswith(REMOVED)],
+            "verification": list(verification),
+            "references": [reference(sources[s], n) for s, n in numbers.items()],
+            "_sources": {n: sources[s] for s, n in numbers.items()}}
+
+
+def render(report: Report, results: list[AgentResult], *, extra_gaps: list[str] = (),
+           verification: list[str] = ()) -> str:
+    """Markdown with numbered source citations, Open gaps from every agent, Verification notes, and References."""
+    view = structure(report, results, extra_gaps=extra_gaps, verification=verification)
+    blocks = []
+    for section in view["sections"]:
+        body = " ".join(_cited(s["text"], f" [{', '.join(map(str, s['citations']))}]" if s["citations"] else "")
+                        for s in section["sentences"])
+        blocks += [f"## {section['heading']}", body]
+    blocks.append("## Open gaps")
+    all_gaps = view["gaps"] + view["removed"]
     blocks.append("\n".join(f"- {g}" for g in all_gaps) or "- None reported.")
     if verification:
         blocks += ["## Verification", "\n".join(f"- {note}" for note in verification)]
-    if numbers:
+    if view["_sources"]:
         blocks.append("## References")
-        blocks.append("\n".join(f"{n}. {format_source(sources[s])}" for s, n in numbers.items()))
+        blocks.append("\n".join(f"{n}. {format_source(s)}" for n, s in view["_sources"].items()))
     return "\n\n".join(blocks)
+
+
+def page_view(report: Report, results: list[AgentResult], **kwargs) -> dict:
+    """structure() without internal objects, ready for JSON."""
+    view = structure(report, results, **kwargs)
+    view.pop("_sources")
+    return view
 
 
 def _cited(text: str, citation: str) -> str:
