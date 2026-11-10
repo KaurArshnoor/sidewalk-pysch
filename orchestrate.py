@@ -69,27 +69,33 @@ def validate_plan(question: str, plan: Plan) -> tuple[Plan, list[str]]:
 Verdict = Literal["agrees", "conflicts", "not_comparable", "direction_unclear"]
 
 WALKABILITY = re.compile(r"walkab|walk score|walkscore", re.IGNORECASE)
+# What a study measured, without the extractor's own interpretation: "perceived crime (indicative of walkability)"
+# is a crime measure, not a walkability measure.
+PROXY = re.compile(r"\(.*?\)|\b(?:indicative of|as a proxy for|a proxy for|proxy for|reflecting|used to indicate)\b.*",
+                   re.IGNORECASE)
 REVERSED = re.compile(r"\b(low|lower|poor|poorer|less|lack of)\b", re.IGNORECASE)  # "low walkability"
 # Outcomes where higher means worse, like modeled frequent mental distress. Wellbeing, quality of life or general
 # "mental health" scores run the other way or are ambiguous, so they are treated as not comparable.
 ADVERSE = re.compile(r"distress|depress|anxi|psychological symptoms|mental disorder|poor mental health", re.IGNORECASE)
 SOCIAL = re.compile(r"lonel|social|isolat|cohesion", re.IGNORECASE)
-RATIO_METRICS = {"OR", "AOR", "RR", "HR", "IRR", "PR"}
+# Ratio metrics have no association at 1; differences, coefficients and correlations at 0.
+RATIO = re.compile(r"\b(?:a?or|odds[- ]ratios?|rr|relative risks?|risk ratios?|a?hr|hazard ratios?|irr|"
+                   r"incidence rate ratios?|pr|prevalence ratios?|rate ratios?)\b", re.IGNORECASE)
 
 
-def _data_direction(evidence: dict) -> int:
-    """-1: higher walkability with less distress; +1: more; 0: interval missing or includes zero."""
-    ci = evidence.get("ci95")
-    if not ci or ci[0] <= 0 <= ci[1]:
-        return 0
-    return -1 if evidence["estimate"] < 0 else 1
+def null_value(metric: str) -> float:
+    return 1.0 if RATIO.search(metric) else 0.0
+
+
+def main_exposure(exposure: str) -> str:
+    return re.sub(r"\s+", " ", PROXY.sub("", exposure)).strip(" ,;")
 
 
 def _literature_direction(effect: dict | None) -> int | None:
-    """Same scale as _data_direction; None when the study reports no effect."""
+    """-1: higher walkability with less of the outcome; +1: more; 0: no association; None: no effect reported."""
     if not effect:
         return None
-    null = 1.0 if effect["metric"].strip().upper() in RATIO_METRICS else 0.0
+    null = null_value(effect["metric"])
     ci = effect.get("ci95")
     if ci and ci[0] <= null <= ci[1]:
         return 0
@@ -101,27 +107,67 @@ def _literature_direction(effect: dict | None) -> int | None:
 def compare(data: Finding, literature: Finding) -> tuple[Verdict, str]:
     """Verdict and reason for one data association and one literature finding."""
     study = literature.evidence
-    exposure, outcome = study.get("exposure", ""), study.get("outcome", "")
+    exposure, outcome = main_exposure(study.get("exposure", "")), study.get("outcome", "")
     if not WALKABILITY.search(exposure):
-        return "not_comparable", f"the study's exposure is {exposure or 'not stated'}, not walkability"
+        return "not_comparable", f"the study measured {exposure or 'an unstated exposure'}, not walkability"
     if SOCIAL.search(outcome):
-        return "not_comparable", (f"the study measured {outcome}; our data measure modeled frequent mental distress, "
-                                  "not loneliness or social connection")
+        return "not_comparable", (f"the study measured {outcome}, while our data measure modeled frequent mental "
+                                  "distress, not loneliness or social connection")
     if not ADVERSE.search(outcome):
         return "not_comparable", f"the study measured {outcome or 'an unstated outcome'}, not mental distress"
     if REVERSED.search(exposure):
         return "direction_unclear", f"the study states its exposure in reverse ({exposure})"
-    ours, theirs = _data_direction(data.evidence), _literature_direction(study.get("effect"))
+    ci = data.evidence.get("ci95")
+    if ci is None:
+        return "direction_unclear", "the data have no confidence interval (single metro), so their direction is uncertain"
+    if ci[0] <= 0 <= ci[1]:
+        return "direction_unclear", "the data interval includes zero, so their direction is uncertain"
+    theirs = _literature_direction(study.get("effect"))
     if theirs is None:
         return "direction_unclear", "the study's abstract reports no effect size to compare"
-    if ours == 0:
-        return "direction_unclear", ("our interval includes zero or is not reported (single metro), "
-                                     "so the data direction is uncertain")
     if theirs == 0:
         return "direction_unclear", "the study's interval includes no association"
+    ours = -1 if data.evidence["estimate"] < 0 else 1
     if ours == theirs:
-        return "agrees", "both find the same direction of association"
-    return "conflicts", "the data and the study find opposite directions of association"
+        return "agrees", "both point the same way"
+    return "conflicts", "they point in opposite directions"
+
+
+def _number(value: float) -> str:
+    return f"{value:+.4f}".replace("+", "") if abs(value) < 1 else f"{value:g}"
+
+
+def _data_text(model: str, evidence: dict) -> str:
+    text = f"the {model} tract-level estimate ({_number(evidence['estimate'])}"
+    ci = evidence.get("ci95")
+    if ci:
+        text += f", 95% interval {_number(ci[0])} to {_number(ci[1])}"
+    return text + ")"
+
+
+def _study_text(study: dict) -> str:
+    design = str(study.get("design", "other")).replace("_", " ")
+    text = f"a {design} study of {study.get('outcome') or 'an unstated outcome'}"
+    effect = study.get("effect")
+    if effect:
+        text += f" ({effect['metric']} {effect['value']:g}"
+        if effect.get("ci95"):
+            text += f", 95% CI {effect['ci95'][0]:g} to {effect['ci95'][1]:g}"
+        text += ")"
+    return text
+
+
+def comparison_claim(model: str, data: dict, study: dict, verdict: Verdict, reason: str) -> str:
+    """A sentence a reader can use, with both sides' numbers; verdict wording is fixed per verdict."""
+    ours, theirs = _data_text(model, data), _study_text(study)
+    first = ours[0].upper() + ours[1:]
+    if verdict == "agrees":
+        return f"{first} and {theirs} point the same way."
+    if verdict == "conflicts":
+        return f"{first} and {theirs} point in opposite directions."
+    if verdict == "not_comparable":
+        return f"{first} cannot be compared with {theirs}: {reason}."
+    return f"Whether {ours} and {theirs} agree is unclear: {reason}."
 
 
 def _weakest(*confidences: str) -> str:
@@ -144,12 +190,9 @@ def reconcile(results: list[AgentResult]) -> AgentResult:
         for lit in literature:
             verdict, reason = compare(d, lit)
             study = lit.evidence
-            design = str(study.get("design", "other")).replace("_", " ")
             body = {
                 "agent": "reconciler",
-                "claim": (f"Comparison of the {model} tract-level walkability–distress association with a {design} "
-                          f"study of {study.get('outcome', 'an unstated outcome')}: {verdict.replace('_', ' ')} "
-                          f"({reason})."),
+                "claim": comparison_claim(model, d.evidence, study, verdict, reason),
                 "evidence": {"verdict": verdict, "reason": reason, "data_finding": d.id, "literature_finding": lit.id,
                              "data_model": model, "data_estimate": d.evidence["estimate"],
                              "data_ci95": d.evidence.get("ci95"), "literature_design": study.get("design"),

@@ -84,6 +84,71 @@ def test_verdicts(results):
     assert compare(adjusted, lit(exposure="low walkability", effect=odds(1.3, 1.1, 1.5)))[0] == "direction_unclear"
 
 
+def test_spelled_out_ratio_metrics(results):
+    adjusted = association(results, True)
+    for metric in ["odds ratio", "Odds Ratio", "aOR", "hazard ratio", "relative risk", "prevalence ratio"]:
+        effect = {"metric": metric, "value": 0.9, "ci95": [0.82, 0.996]}
+        assert compare(adjusted, study(effect=effect).findings[0])[0] == "agrees", metric
+    beta = {"metric": "standardized coefficient", "value": 0.9, "ci95": [0.82, 0.996]}  # null is 0, not 1
+    assert compare(adjusted, study(effect=beta).findings[0])[0] == "conflicts"
+
+
+def test_live_run_crime_study_is_not_comparable(results):
+    """From the first live run: the extractor's interpretation in parentheses is not the exposure."""
+    lit = study(exposure="perceived neighborhood crime (indicative of greater neighborhood walkability)",
+                outcome="elevated symptoms of depression", effect={"metric": "odds ratio", "value": 0.9,
+                                                                   "ci95": [0.82, 0.996]}).findings[0]
+    verdict, reason = compare(association(results, True), lit)
+    assert verdict == "not_comparable" and "perceived neighborhood crime" in reason and "indicative" not in reason
+    proxy = study(exposure="street connectivity as a proxy for walkability", effect=odds(0.8, 0.7, 0.9)).findings[0]
+    assert compare(association(results, True), proxy)[0] == "not_comparable"
+
+
+def test_reasons_name_the_actual_cause(results):
+    lit = study(effect=odds(0.8, 0.7, 0.9)).findings[0]
+    _, pooled = compare(association(results, False), lit)
+    assert "interval includes zero" in pooled and "single metro" not in pooled
+    single = next(f for r in results for f in r.findings if "estimate" in f.evidence and not f.evidence.get("ci95"))
+    _, metro = compare(single, lit)
+    assert "single metro" in metro
+
+
+def test_comparison_claims_read_well_and_pass_number_checks(results):
+    lit = study(effect={"metric": "OR", "value": 0.9, "ci95": [0.82, 0.996]})
+    pooled = results + [lit, reconcile(results + [lit])]
+    findings, _, _ = pool(pooled)
+    adjusted = association(results, True)
+    comparison = next(f for f in findings.values()
+                      if f.agent == "reconciler" and f.evidence["data_finding"] == adjusted.id)
+    assert comparison.claim.startswith("The adjusted tract-level estimate (-0.0659, 95% interval")
+    assert "(OR 0.9, 95% CI 0.82 to 0.996) point the same way." in comparison.claim
+    copied = Report(sections=[Section(heading="Where they agree or disagree", sentences=[
+        Sentence(text=comparison.claim, finding_ids=[comparison.id], hedge="exploratory")])], gaps=[])
+    assert check_report(copied, findings) == [] and check_numbers(copied, findings) == []
+
+
+def test_writer_sees_wording_ceiling_and_uncertain_intervals(results):
+    from report import writer_item
+    unadjusted, adjusted = association(results, False), association(results, True)
+    assert writer_item(unadjusted)["interval_includes_zero"] is True
+    assert writer_item(adjusted)["interval_includes_zero"] is False
+    weak = study(confidence="literature_weak").findings[0]
+    assert writer_item(weak)["strongest_wording"] == "exploratory" and "interval_includes_zero" not in writer_item(weak)
+
+
+def test_long_limitations_are_flagged_past_the_limit(results):
+    from report import check_report_items
+    from verify import remove_flagged
+    findings, _, _ = pool(results)
+    data = association(results, True)
+    report = Report(sections=[Section(heading="Limitations and caveats", sentences=[
+        Sentence(text=f"Caveat {n}.", finding_ids=[data.id], hedge="exploratory") for n in range(9)])], gaps=[])
+    problems = check_report(report, findings)
+    assert len(problems) == 3 and all("beyond the limit" in p for p in problems)
+    trimmed, _ = remove_flagged(report, check_report_items(report, findings))
+    assert len(trimmed.sections[0].sentences) == 6
+
+
 def test_reconcile_findings_carry_sources_and_weakest_confidence(results):
     lit = study(effect=odds(0.8, 0.7, 0.9), confidence="literature_strong")
     out = reconcile(results + [lit])
@@ -192,6 +257,109 @@ async def test_orchestrate_end_to_end(monkeypatch, results):
     assert "built environment agent did not finish" in out.report.markdown
     writer_prompt_text = next(p for name, p in prompts if name == "writer")
     assert comparison.id in writer_prompt_text
+
+
+async def test_turn_limit_keeps_findings_already_recorded(monkeypatch):
+    """Live run: the literature agent hit MaxTurnsExceeded and the whole agent's work was lost."""
+    pytest.importorskip("agents")
+    import agents
+    from agents import MaxTurnsExceeded
+    import app
+
+    monkeypatch.setenv("SIDEWALK_MODEL", "vertex_ai/gemini-3.5-flash-lite")
+
+    async def runs_out(agent, prompt, *, context, **kwargs):
+        context.invoke("dataset_metadata")
+        context.invoke("profile", columns=["walkability"])
+        raise MaxTurnsExceeded("Max turns (8) exceeded")
+
+    monkeypatch.setattr(agents.Runner, "run", runs_out)
+    result, calls = await app.run_agent("built_environment", "Describe walkability.", ROOT / "data/processed/study")
+    assert result.status == "ok" and result.findings and len(calls) == 2
+    assert "limit of 8 model turns" in result.gaps[0]
+    assert {s.id for s in result.sources} >= {s for f in result.findings for s in f.source_ids}
+
+
+async def test_timeout_keeps_findings_already_recorded(monkeypatch):
+    pytest.importorskip("agents")
+    import asyncio
+
+    import agents
+    import app
+
+    monkeypatch.setenv("SIDEWALK_MODEL", "vertex_ai/gemini-3.5-flash-lite")
+
+    async def slow(agent, prompt, *, context, **kwargs):
+        context.invoke("dataset_metadata")
+        context.invoke("profile", columns=["walkability"])
+        await asyncio.sleep(10)  # still "thinking" when the limit hits
+
+    monkeypatch.setattr(agents.Runner, "run", slow)
+    result, calls = await app.run_agent("built_environment", "Describe walkability.", ROOT / "data/processed/study",
+                                        timeout=0.05)
+    assert result.status == "ok" and result.findings and len(calls) == 2
+    assert "ran out of time after 0.05 seconds" in result.gaps[0] and app.PARTIAL in result.gaps[0]
+
+
+async def test_timeout_with_nothing_recorded_is_insufficient_not_an_error(monkeypatch):
+    pytest.importorskip("agents")
+    import asyncio
+
+    import agents
+    import app
+
+    monkeypatch.setenv("SIDEWALK_MODEL", "vertex_ai/gemini-3.5-flash-lite")
+
+    async def stuck(agent, prompt, **kwargs):
+        await asyncio.sleep(10)
+
+    monkeypatch.setattr(agents.Runner, "run", stuck)
+    result, calls = await app.run_agent("literature", "Walkability and depression studies?", ROOT, timeout=0.05)
+    assert result.status == "insufficient" and result.findings == [] and calls == []
+    assert "0 finding(s)" in result.gaps[0]
+
+
+async def test_study_uses_partial_literature_and_marks_it(monkeypatch, results):
+    """A literature agent cut off after recording one study still contributes it to the report."""
+    pytest.importorskip("agents")
+    import agents
+    import app
+
+    monkeypatch.setenv("SIDEWALK_MODEL", "vertex_ai/gemini-3.5-flash-lite")
+    analyst = next(r for r in results if r.agent == "analyst" and any(f.evidence.get("ci95") for f in r.findings))
+    lit = study(effect=odds(0.8, 0.7, 0.9))
+    cut = lit.model_copy(update={"gaps": [f"The literature agent ran out of time after 360 seconds; its 1 finding(s) "
+                                          f"recorded so far are kept, and {app.PARTIAL}."]})
+
+    async def fake_agent(role, question, dataset, **kwargs):
+        assert kwargs["timeout"] == app.agent_timeout(role)  # the limit is passed in, not applied outside
+        return {"analyst": analyst, "literature": cut}[role], []
+
+    plan = Plan(tasks=[Task(role="analyst", sub_question="Fit both models.", why="a"),
+                       Task(role="literature", sub_question="Studies of walkability and depression.", why="b")],
+                clarification=None)
+    data = association(results, True)
+    report = Report(sections=[Section(heading="What our data show", sentences=[Sentence(
+        text="In this exploratory model the adjusted association is negative.", finding_ids=[data.id],
+        hedge="exploratory")])], gaps=[])
+
+    async def fake_run(agent, prompt, **kwargs):
+        if agent.name == "planner":
+            return SimpleNamespace(final_output=plan)
+        if agent.name == "writer":
+            return SimpleNamespace(final_output=report)
+        return SimpleNamespace(final_output=VerifierOutput(verdicts=[Verdict(sentence=1, status="supported", reason="ok")]))
+
+    monkeypatch.setattr(app, "run_agent", fake_agent)
+    monkeypatch.setattr(agents.Runner, "run", fake_run)
+    offline = httpx.MockTransport(lambda request: httpx.Response(500, text="offline"))
+    async with httpx.AsyncClient(transport=offline) as client:
+        out = await app.orchestrate("Walkability and depression?", ROOT / "data/processed/study", client=client)
+    status = {a.role: a for a in out.agents}
+    assert status["literature"].status == "partial" and "ran out of time" in status["literature"].error
+    assert status["analyst"].status == "ok"
+    assert any(f.agent == "reconciler" for r in out.results for f in r.findings)  # partial study still compared
+    assert "ran out of time" in out.report.markdown  # listed under Open gaps
 
 
 async def test_orchestrate_asks_when_the_plan_is_empty(monkeypatch):

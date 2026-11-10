@@ -46,6 +46,7 @@ CEILING: dict[str, Hedge] = {  # strongest wording each finding confidence allow
 CAUSAL = re.compile(r"\b(causes?|caused|causal(?:ly)?|leads? to|led to|improves?|improved|reduces?|reduced|"
                     r"effects? of|because of|results? in|resulted in|drives?)\b", re.IGNORECASE)
 UNCITED_OK = {"Question"}  # framing only; comparisons must cite reconciler findings
+MAX_LIMITATIONS = 6  # the prompt asks for at most 5; one sentence of slack before it counts as a problem
 UNKNOWN = "cites findings you were not given"
 PROVENANCE = "Raw file SHA256s:"  # checksum source notes: kept on findings, not useful to the Writer
 
@@ -66,6 +67,11 @@ def check_report_items(report: Report, findings: dict[str, Finding]) -> list[tup
     """Rule violations as (section index, sentence index, message)."""
     problems = []
     for si, section in enumerate(report.sections):
+        if section.heading == "Limitations and caveats" and len(section.sentences) > MAX_LIMITATIONS:
+            # Flag every extra sentence, so a draft that stays too long is trimmed when flagged sentences are removed.
+            problems += [(si, i, f"beyond the limit: Limitations and caveats has {len(section.sentences)} "
+                                 "sentences; keep at most 5, the ones most relevant to the question")
+                         for i in range(MAX_LIMITATIONS, len(section.sentences))]
         for i, sentence in enumerate(section.sentences):
             unknown = sorted(set(sentence.finding_ids) - findings.keys())
             if unknown:
@@ -95,11 +101,21 @@ def check_report(report: Report, findings: dict[str, Finding]) -> list[str]:
     return [f"{where(report, si, i)}: {message}" for si, i, message in check_report_items(report, findings)]
 
 
+def writer_item(f: Finding) -> dict:
+    """What the Writer sees per finding: the wording ceiling is given, not left for the model to look up."""
+    item = {"id": f.id, "agent": f.agent, "claim": f.claim, "confidence": f.confidence,
+            "strongest_wording": CEILING[f.confidence]}
+    if f.agent == "reconciler":
+        item["verdict"] = f.evidence["verdict"]
+    ci = f.evidence.get("ci95") if f.agent != "reconciler" else None
+    if ci and "estimate" in f.evidence:
+        item["interval_includes_zero"] = ci[0] <= 0 <= ci[1]
+    return item
+
+
 def writer_prompt(question: str, results: list[AgentResult], feedback: list[str] | None = None) -> str:
     findings, _, gaps = pool(results)
-    items = [{"id": f.id, "agent": f.agent, "claim": f.claim, "confidence": f.confidence,
-              **({"verdict": f.evidence["verdict"]} if f.agent == "reconciler" else {})}
-             for f in findings.values()]
+    items = [writer_item(f) for f in findings.values()]
     caveats: dict[str, list[str]] = {}  # caveats repeat across findings; list each once
     for f in findings.values():
         for caveat in f.caveats:

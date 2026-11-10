@@ -60,7 +60,7 @@ def api_app(monkeypatch):
     import app as module
     monkeypatch.setenv("SIDEWALK_DATASET", str(ROOT / "data/processed/study"))
 
-    async def stub_agent(role, question, dataset, *, hooks=None, metro=None):
+    async def stub_agent(role, question, dataset, *, hooks=None, metro=None, timeout=None):
         # Test HTTP transport and real data access without purchasing a model call.
         ctx = WorkContext(Catalog(dataset), role, metro=metro)
         ctx.invoke("dataset_metadata")

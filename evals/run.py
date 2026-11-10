@@ -8,7 +8,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from app import create_agent, orchestrate, run_agent
+from app import agent_timeout, create_agent, orchestrate, run_agent
 from data import ROOT
 
 
@@ -81,12 +81,14 @@ async def evaluate(args):
     for case in cases:
         try:
             if case["agent"] == "study":
-                study = await asyncio.wait_for(orchestrate(case["question"], args.dataset), 600)
+                study = await asyncio.wait_for(orchestrate(case["question"], args.dataset), 900)
                 checks = study_checks(case, study)
                 row = {"id": case["id"], "checks": checks, "study": study.model_dump()}
                 candidate = study.report.markdown if study.report else study.clarification
             else:
-                result, calls = await asyncio.wait_for(run_agent(case["agent"], case["question"], args.dataset), 240)
+                limit = agent_timeout(case["agent"])
+                result, calls = await asyncio.wait_for(
+                    run_agent(case["agent"], case["question"], args.dataset, timeout=limit), limit + 30)
                 checks = deterministic(case, result, calls)
                 row = {"id": case["id"], "checks": checks,
                        "result": result.model_dump(), "tool_calls": [c.model_dump() for c in calls]}
