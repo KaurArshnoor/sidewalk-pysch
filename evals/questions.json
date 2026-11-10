@@ -147,5 +147,50 @@
     "question": "Do the results agree with the literature on loneliness and walkability?",
     "reference": "This data-only agent lacks literature findings and direct loneliness data. Flag the missing literature handoff.",
     "expect_gap": true
+  },
+  {
+    "id": "L01",
+    "agent": "literature",
+    "question": "What does published research report about neighborhood walkability and depression or psychological distress? Include study designs and sample sizes.",
+    "reference": "Records several studies from abstracts with designs and outcomes named as measured; numbers only when quoted; cross-sectional limits kept.",
+    "min_findings": 3
+  },
+  {
+    "id": "L02",
+    "agent": "literature",
+    "question": "What do studies report about neighborhood walkability and loneliness or social connection?",
+    "reference": "Names loneliness or social-connection outcomes as measured and does not substitute depression or distress studies for them; records gaps when evidence is thin.",
+    "expect_gap": true
+  },
+  {
+    "id": "S01",
+    "agent": "study",
+    "question": "Are more walkable neighborhoods associated with lower frequent mental distress after adjustment, and how does that compare with published research on walkability and depression?",
+    "reference": "Plans analyst and literature; reports both data models; comparison section cites reconciler findings and states verdicts as given; no causal language.",
+    "expected_roles": [
+      "analyst",
+      "literature"
+    ],
+    "expect_reconciliation": true,
+    "max_removed": 2
+  },
+  {
+    "id": "S02",
+    "agent": "study",
+    "question": "Is walkability linked to loneliness, and does the link differ in poorer neighborhoods?",
+    "reference": "Adds literature for loneliness; analyst fits the poverty interaction; marks modeled distress versus loneliness as not comparable rather than agreement.",
+    "expected_roles": [
+      "analyst",
+      "literature"
+    ],
+    "expect_reconciliation": true,
+    "max_removed": 2
+  },
+  {
+    "id": "S03",
+    "agent": "study",
+    "question": "Please analyze the data.",
+    "reference": "Too vague to plan: asks which measure or comparison instead of running agents.",
+    "expect_clarification": true
   }
 ]

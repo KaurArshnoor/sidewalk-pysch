@@ -222,3 +222,6 @@ __marimo__/
 # Offline downloads; curated small snapshots may be committed separately.
 data/raw/
 evals/results/
+
+# Orchestrated study runs (see save_run in app.py)
+runs/

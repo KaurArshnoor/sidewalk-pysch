@@ -17,12 +17,23 @@ To run one agent directly:
 uv run app.py --agent analyst --question "Compare unadjusted and adjusted walkability–mental-distress associations."
 ```
 
+To run a full study (planner → agents in parallel → literature–data reconciliation → Writer ↔ Verifier), use `--agent study`, or choose **Full study** on the page. Each run is saved to `runs/<run_id>.json`.
+
+```sh
+uv run app.py --agent study --question "Is walkability linked to lower mental distress, and how does that compare with research on walkability and depression?"
+```
+
 ## Read the code
 
 | File | Purpose |
 |---|---|
-| **`app.py`** | Three agents, their tool wrappers, research runs, and web routes |
-| **`data.py`** | Load the dataset, compute statistics, and attach sources/caveats to findings |
+| **`app.py`** | All agents (three data agents, literature researcher, planner, Writer, Verifier), their tool wrappers, the `orchestrate()` pipeline, and web routes |
+| `orchestrate.py` | Plan checks (required roles, one task per role) and literature–data reconciliation verdicts |
+| **`data.py`** | Load the dataset, compute statistics, and attach sources/caveats to findings; shared findings types |
+| `literature.py` | Literature search (PubMed, OpenAlex, PsyArXiv), query expansion, extraction checks, evidence-strength rubric |
+| `report.py` | Writer report format, wording/citation checks, Markdown rendering |
+| `verify.py` | Verifier citation checks (Crossref, PubMed, retractions), number checks, claim verdicts |
+| `apis.py` | Shared HTTP access with per-service rate limits and retries |
 | `web/index.html` | Frontend |
 | `web/context_panel.py`, `web/context-panel.js` | Model/tool trace panel from the starter |
 | `scripts/build_data.py` | Core source downloads, cleaning, crosswalk, and full dataset build |
@@ -49,6 +60,12 @@ The offline build is separate from answering questions.
 The built-environment agent describes EPA walkability, derived ParkServe access, and mapped OSM gathering places. The health/demographics agent describes CDC and ACS measures. The analyst computes unadjusted/adjusted models and poverty or park-access interactions. All return `claim, evidence, source_ids, confidence, caveats` for the shared Writer. Numerical claims come from Python tools; the model can select only findings those tools produced.
 
 Choose a named metro in the web form to restrict all data tools to that metro; city limits are not the unit of analysis. A selected metro shows exploratory within-metro coefficients, with confidence intervals suppressed because only one metro cluster is available. The selector is enforced in Python, rather than relying on the model to remember it. Loneliness, social connection, and explanations still require the literature findings.
+
+## Notes on External APIs
+
+No API keys are required, except for the Census API. The literature researcher searches PubMed, OpenAlex and PsyArXiv; the Verifier checks citations against Crossref and PubMed. The data agents and Writer call no outside services at runtime.
+
+The main limit is **OpenAlex**: without a key, about 100 searches per day are shared by everyone on the same IP address, so it can run out on a campus network or Cloud Run. When any service is unavailable, the agent records a gap and continues. A free `OPENALEX_API_KEY` is optional. Per-service limits, fallbacks, and settings are in [docs/external-apis.md](docs/external-apis.md).
 
 ## Data
 
@@ -108,4 +125,4 @@ Twenty hand-authored questions cover supported measures, missing layers, clarifi
 
 The report pipeline can import `run_agent` from `app.py` and pass `result.model_dump()` to the Writer. Each call starts a fresh context. `POST /chat` accepts `message`, `agent`, and an optional `metro` code; responses include `response`, agent-labeled `tool_calls`, structured `result`, and `run_id`. `/run` retains the starter’s SSE activity stream. Confirm exact Project 1 fields before final team integration.
 
-Remaining shared work: Lead fan-out/gap loop, literature/Writer/Verifier integration, combined evaluations, submission authors/URL, and Cloud Run deployment. The Dockerfile binds to `0.0.0.0:$PORT` and ships the prepared data. No deployment has been performed.
+The literature researcher (`--agent literature`) and the Writer/Verifier loop (`write_verified_report` in `app.py`; try `--write-from` on saved results) are implemented. Remaining shared work: the Lead fan-out/gap loop that runs all agents and then the Writer/Verifier, combined evaluations, submission authors/URL, and Cloud Run deployment. The Dockerfile binds to `0.0.0.0:$PORT` and ships the prepared data. No deployment has been performed.
