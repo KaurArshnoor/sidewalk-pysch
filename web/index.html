@@ -25,7 +25,8 @@
       <p class="muted">Metro areas include the city and surrounding counties, rather than city limits.</p><label for="agent">Specialist</label><select id="agent">
       <option value="built_environment">Built environment researcher · walkability, amenities, parks</option>
       <option value="health_demographics">Health and demographics researcher · CDC + ACS</option>
-      <option value="analyst" selected>Analyst · unadjusted and adjusted associations</option></select>
+      <option value="analyst" selected>Analyst · unadjusted and adjusted associations</option>
+      <option value="literature">Literature researcher · PubMed, OpenAlex, PsyArXiv (metro not used)</option></select>
       <label for="question">Question</label><textarea id="question" maxlength="2000">Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?</textarea>
       <button id="run">Explore data</button><span id="status" role="status"></span></form>
   </section>
@@ -34,14 +35,14 @@
     <details><summary>Sources</summary><ul id="sources"></ul></details><details><summary>Structured findings and caveats</summary><pre id="findings">No run yet.</pre></details>
     <details><summary>Tool calls · includes agent names</summary><pre id="tools">No run yet.</pre></details></section>
   <details><summary>Snapshot provenance and coverage</summary><pre id="metadata"></pre></details>
-  <p class="muted">This workbench uses modeled frequent mental distress, rather than direct loneliness or social-connection measures. Neighborhood associations cannot establish causation. Literature-based explanations are not integrated yet.</p>
+  <p class="muted">This workbench uses modeled frequent mental distress, rather than direct loneliness or social-connection measures. Neighborhood associations cannot establish causation. The literature researcher reads abstracts only and runs separately from the data agents.</p>
 </main>
 <script src="/context-panel.js"></script>
 <script>
   const $=id=>document.getElementById(id); let source=null,runId=null;
   $('context-container').appendChild(document.getElementById('context-panel'));
   const traceStyle=document.createElement('style');traceStyle.textContent='body{margin-right:0}#context-panel,#context-panel.timeline{position:static;width:100%;height:auto;max-height:560px;border:0;padding:12px}details{margin:14px 0}a{color:#285f4b}';document.head.appendChild(traceStyle);
-  const samples={built_environment:'What walkability and park-access measures are available, and what are their limits?',health_demographics:'What do CDC frequent mental distress and ACS poverty measure in this snapshot?',analyst:'Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?'};
+  const samples={built_environment:'What walkability and park-access measures are available, and what are their limits?',health_demographics:'What do CDC frequent mental distress and ACS poverty measure in this snapshot?',analyst:'Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?',literature:'What does published research report about neighborhood walkability and loneliness or depression? Include study designs and sample sizes.'};
   $('agent').onchange=()=>{$('question').value=samples[$('agent').value]};
   fetch('/metadata').then(r=>{if(!r.ok)throw Error('Snapshot unavailable');return r.json()}).then(m=>{
     $('mode').textContent='REAL STUDY DATA · '+m.rows+' tracts';

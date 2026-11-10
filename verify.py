@@ -14,16 +14,12 @@ from urllib.parse import quote
 import httpx
 from pydantic import BaseModel
 
+from apis import get, limits as api_limits, new_client
 from data import AgentResult, Finding, PaperSource, Source
 from report import PROVENANCE, Report, check_report_items, where
 
 CROSSREF = "https://api.crossref.org/works/"
 ESUMMARY = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
-HEADERS = {"User-Agent": "sidewalk-psych/0.1 (research coursework verifier)"}
-# Anonymous public limits: Crossref allows little concurrency without a contact address (429 otherwise);
-# PubMed allows 3 requests/second without a key.
-CONCURRENCY = {"crossref": 1, "pubmed": 2}
-RETRIES = 3
 
 Status = Literal["ok", "not_found", "metadata_mismatch", "retracted", "expression_of_concern",
                  "corrected", "unchecked", "lookup_failed"]
@@ -59,28 +55,13 @@ def _same_title(a: str, b: str) -> bool:
     return difflib.SequenceMatcher(None, _normalize(a), _normalize(b)).ratio() >= 0.9
 
 
-async def _get(client: httpx.AsyncClient, url: str, limit: asyncio.Semaphore, **params) -> dict | None:
-    """JSON response, or None when the identifier does not exist. Retries rate limits; other errors propagate."""
-    for attempt in range(RETRIES + 1):
-        async with limit:
-            response = await client.get(url, params=params or None, headers=HEADERS)
-            if response.status_code == 429 and attempt < RETRIES:
-                retry_after = response.headers.get("Retry-After", "")
-                await asyncio.sleep(min(float(retry_after), 10) if retry_after.isdigit() else 1.5 * (attempt + 1))
-                continue
-        if response.status_code == 404:
-            return None
-        response.raise_for_status()
-        return response.json()
-
-
 async def crossref_record(client: httpx.AsyncClient, doi: str, limit: asyncio.Semaphore) -> dict | None:
-    data = await _get(client, CROSSREF + quote(doi, safe="/()"), limit)
+    data = await get(client, CROSSREF + quote(doi, safe="/()"), limit)
     return data["message"] if data else None
 
 
 async def pubmed_record(client: httpx.AsyncClient, pmid: str, limit: asyncio.Semaphore) -> dict | None:
-    data = await _get(client, ESUMMARY, limit, db="pubmed", id=pmid, retmode="json")
+    data = await get(client, ESUMMARY, limit, db="pubmed", id=pmid, retmode="json")
     record = (data or {}).get("result", {}).get(pmid)
     return None if not record or "error" in record else record
 
@@ -167,10 +148,10 @@ async def check_source(client: httpx.AsyncClient, source: Source | PaperSource,
 
 async def check_citations(sources: list[Source | PaperSource],
                           client: httpx.AsyncClient | None = None) -> list[CitationCheck]:
-    limits = {name: asyncio.Semaphore(n) for name, n in CONCURRENCY.items()}
+    limits = api_limits()
     if client is not None:
         return list(await asyncio.gather(*(check_source(client, s, limits) for s in sources)))
-    async with httpx.AsyncClient(timeout=15, follow_redirects=True) as own:
+    async with new_client() as own:
         return list(await asyncio.gather(*(check_source(own, s, limits) for s in sources)))
 
 
@@ -206,7 +187,7 @@ NUMBER = re.compile(r"(?<![\w.])[-+−]?\d[\d,]*(?:\.\d+)?")
 IGNORED = {95, 100}  # "95% interval", "0–100 units"
 
 
-def _numbers(text: str) -> list[tuple[str, float]]:
+def numbers_in(text: str) -> list[tuple[str, float]]:
     found = []
     for match in NUMBER.finditer(text):
         raw = match.group().rstrip(",").replace("−", "-").replace(",", "")
@@ -235,8 +216,8 @@ def check_numbers(report: Report, findings: dict[str, Finding]) -> list[tuple[in
             cited = [findings[f] for f in sentence.finding_ids if f in findings]
             text = " ".join([f.claim for f in cited] + [c for f in cited for c in f.caveats]
                             + [json.dumps(f.evidence) for f in cited])
-            available = [v for _, v in _numbers(text)]
-            missing = [raw for raw, value in _numbers(sentence.text)
+            available = [v for _, v in numbers_in(text)]
+            missing = [raw for raw, value in numbers_in(sentence.text)
                        if not _ignored(raw, value) and not any(_supports(value, raw, s) for s in available)]
             if missing:
                 problems.append((si, i, f"numbers not found in the cited findings: {', '.join(missing)}"))

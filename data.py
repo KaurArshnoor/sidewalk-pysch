@@ -70,6 +70,8 @@ class StudyEvidence(BaseModel):
     model_config = ConfigDict(extra="forbid")
     paper_id: str  # PaperSource.id
     design: Literal["meta_analysis", "rct", "longitudinal", "cross_sectional", "ecological", "qualitative", "other"]
+    exposure: str  # what the study measured as the environment, e.g. "neighborhood walkability"
+    outcome: str  # what it measured as the result, e.g. "depressive symptoms" (not necessarily loneliness)
     n: int | None = None
     effect: Effect | None = None
     preregistered: bool | None = None  # None when the paper does not say
@@ -286,6 +288,10 @@ class WorkContext:
     findings: dict[str, Finding] = field(default_factory=dict)
     calls: list[ToolCall] = field(default_factory=list)
     max_calls: int = 12
+
+    @property
+    def sources(self) -> list[Source]:
+        return self.catalog.sources
 
     def finding(self, claim: str, evidence: dict, columns: list[str], caveats: list[str], confidence="descriptive"):
         source_ids = self.catalog.sources_for(columns)
