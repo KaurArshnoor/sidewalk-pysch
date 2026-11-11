@@ -746,7 +746,6 @@
     "Crosswalk review is documented and checked in code, not an independent validation of interpolated weights.",
     "Minor boundary/cartographic changes can remain even when 2020 and 2023 tract ID inventories agree.",
     "CDC PLACES 2025 omits Pennsylvania's 2023 frequent-mental-distress estimates. Philadelphia health/model samples cover only available non-Pennsylvania portions, not the full metro. Do not generalize those subset results to the whole metro. See https://www.cdc.gov/places/current-release-notes/ .",
-    "No tract adjacency file is included; residual Moran diagnostics are unavailable, while metro clustering remains available.",
     "Missing observations remain missing; the analyst must disclose complete-case exclusions.",
     "No direct loneliness or social-connection measures are loaded.",
     "Park access uses 2020 block population points and retrieved ParkServe polygons; OSM is a later mapped inventory. Neither measures actual use or social interaction."

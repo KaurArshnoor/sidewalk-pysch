@@ -386,3 +386,92 @@ async def test_orchestrate_asks_when_the_plan_is_empty(monkeypatch):
     monkeypatch.setattr(agents.Runner, "run", fake_run)
     out = await app.orchestrate("Please analyze the data.", ROOT / "data/processed/study")
     assert out.report is None and out.clarification == "Which measure should I study?" and out.agents == []
+
+
+
+async def test_explicit_baseline_request_is_not_satisfied_by_interactions(monkeypatch):
+    import agents
+    import app
+    from data import AgentDecision
+
+    monkeypatch.setenv("SIDEWALK_MODEL", "vertex_ai/gemini-3.5-flash-lite")
+
+    async def run(agent, prompt, *, context, **kwargs):
+        context.invoke("dataset_metadata")
+        interaction = context.invoke("association", adjusted=True, moderator="poverty_pct")
+        return SimpleNamespace(final_output=AgentDecision(finding_ids=[interaction["id"]],
+                                                          gaps=[], clarification=None))
+
+    monkeypatch.setattr(agents.Runner, "run", run)
+    result, _ = await app.run_agent(
+        "analyst", "Compare unadjusted and adjusted walkability–distress associations and the poverty interaction.",
+        ROOT / "data/processed/study", metro="12060")
+    models = [f.evidence for f in result.findings]
+    assert {m["adjusted"] for m in models if not m["moderator"]} == {False, True}
+    assert any(m["moderator"] == "poverty_pct" for m in models)
+    assert all(m["metro_filter"] == "12060" for m in models)
+
+
+
+async def test_default_chat_collects_parallel_research_and_one_followup(monkeypatch):
+    import asyncio
+
+    import agents
+    import app
+    import verify
+    from data import ToolCall
+
+    monkeypatch.setenv("SIDEWALK_MODEL", "vertex_ai/gemini-3.5-flash-lite")
+    initial = Plan(tasks=[
+        Task(role="analyst", sub_question="Fit the distress model.", why="data"),
+        Task(role="literature", sub_question="Find walkability studies.", why="literature"),
+    ], clarification=None)
+    targeted = Task(role="literature", sub_question="Search for a depression cohort.", why="Fill the evidence gap")
+    revised = Plan(tasks=[targeted, targeted], clarification=None)
+    plans = iter([initial, revised])
+    started = set()
+    both_started = asyncio.Event()
+
+    async def planner(agent, prompt, **kwargs):
+        plan = next(plans)
+        if plan is revised:
+            assert "No directly relevant paper found" in prompt
+        return SimpleNamespace(final_output=plan)
+
+    async def research(role, question, dataset, **kwargs):
+        if question != targeted.sub_question:
+            started.add(role)
+            if len(started) == 2:
+                both_started.set()
+            await asyncio.wait_for(both_started.wait(), 1)
+        result = study().model_copy(update={"question": question})
+        if role == "analyst":
+            result = AgentResult(agent=role, question=question, status="ok", findings=[], sources=[])
+        elif question != targeted.sub_question:
+            result = result.model_copy(update={"findings": [], "sources": [], "status": "insufficient",
+                                               "gaps": ["No directly relevant paper found."]})
+        call = ToolCall(agent=role, name="search_pubmed" if role == "literature" else "dataset_metadata",
+                        arguments={}, result={}, duration_ms=1)
+        return result, [call]
+
+    async def citations(*args, **kwargs):
+        return []
+
+    async def writer(question, results, **kwargs):
+        paper_results = next(r for r in results if r.agent == "literature")
+        assert len(paper_results.findings) == 1 and not paper_results.gaps
+        return app.VerifiedReport(markdown="Report with a verified paper.", report={}, citations=[], removed=[], rounds=1)
+
+    monkeypatch.setattr(agents.Runner, "run", planner)
+    monkeypatch.setattr(app, "run_agent", research)
+    monkeypatch.setattr(verify, "check_citations", citations)
+    monkeypatch.setattr(app, "write_verified_report", writer)
+    monkeypatch.setattr(app, "save_run", lambda *args: None)
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app.app), base_url="http://test") as client:
+        response = await client.post("/chat", json={"message": "How does walkability relate to distress and depression research?"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["response"] == "Report with a verified paper."
+    assert [a["round"] for a in body["result"]["agents"]] == [1, 1, 2]
+    assert body["result"]["followup_tasks"] == [targeted.model_dump()]
+    assert [c["agent"] for c in body["tool_calls"]] == ["analyst", "literature", "literature"]

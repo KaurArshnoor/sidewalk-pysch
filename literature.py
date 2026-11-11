@@ -281,7 +281,7 @@ def _clean(text: str) -> str:
 
 
 def _in_quote(value: float, quote_numbers: list[float]) -> bool:
-    return any(abs(abs(value) - q) < 1e-9 for q in quote_numbers)
+    return any(abs(value - q) < 1e-9 for q in quote_numbers)
 
 
 # The agent's context
@@ -296,6 +296,7 @@ class LiteratureContext:
     recorded: dict[str, str] = field(default_factory=dict)  # paper id → finding id
     calls: list[ToolCall] = field(default_factory=list)
     max_calls: int = 25
+    reviewing_abstracts: bool = False
     _limits: dict | None = None
 
     @property
@@ -375,9 +376,9 @@ class LiteratureContext:
             raise ValueError(f"The abstract does not describe a {DESIGN_LABEL[design]} design; choose the design it states")
         # The sample size is usually in a methods sentence, not the result sentence being quoted, so n is checked
         # against the whole abstract. The effect and its interval must be in the quote: the quote is their evidence.
-        if n is not None and not _in_quote(n, [abs(v) for _, v in numbers_in(_clean(paper.abstract))]):
+        if n is not None and not _in_quote(n, [v for _, v in numbers_in(_clean(paper.abstract))]):
             raise ValueError(f"n={n} does not appear in this paper's abstract; omit n and record the study without it")
-        numbers = [abs(v) for _, v in numbers_in(quote)]
+        numbers = [v for _, v in numbers_in(quote)]
         for label, value in [("effect_value", effect_value), ("ci_low", ci_low), ("ci_high", ci_high)]:
             if value is not None and not _in_quote(value, numbers):
                 raise ValueError(f"{label}={value} does not appear in the quote; quote the sentence that reports it, "
@@ -386,6 +387,8 @@ class LiteratureContext:
             raise ValueError("effect_metric is required with effect_value (for example OR, beta, r)")
         if (ci_low is None) != (ci_high is None) or (ci_low is not None and effect_value is None):
             raise ValueError("Give both ci_low and ci_high, together with effect_value")
+        if ci_low is not None and not ci_low <= effect_value <= ci_high:
+            raise ValueError("The confidence interval must contain the effect estimate")
         effect = Effect(metric=effect_metric, value=effect_value,
                         ci95=(ci_low, ci_high) if ci_low is not None else None) if effect_value is not None else None
         strength = score(design, n, paper.preregistered, paper.preprint)

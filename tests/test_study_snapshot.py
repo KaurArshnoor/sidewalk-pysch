@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from data import ROOT, Catalog, digest
+from data import ROOT, Catalog, WorkContext, digest
 
 STUDY = ROOT / "data/processed/study"
 pytestmark = pytest.mark.skipif(not (STUDY / "manifest.json").exists(), reason="Prepared study snapshot not present")
@@ -57,3 +57,18 @@ def test_real_environment_layers_and_coverage_are_present():
     assert d.loc[~populated, "amenities_per_1000"].isna().all()
     assert {"parkserve-service-snapshot", "osm-gathering-places", "census-blocks-2020", "census-tract-polygons-2023"} <= c.source_ids
     assert all(row["park_access"] > 0 and row["amenities"] > 0 for row in c.manifest["scope"]["coverage"])
+
+
+def test_real_metro_model_runs_without_optional_spatial_diagnostic():
+    catalog = Catalog(STUDY)
+    model = WorkContext(catalog, "analyst", metro="12060").invoke("association", adjusted=True)
+    evidence = model["evidence"]
+    assert evidence["status"] == "ok" and evidence["n_complete"] > 0
+    assert evidence["ci95"] is None
+    if catalog.adjacency is None:
+        assert evidence["residual_spatial_diagnostic"]["status"] == "not_run"
+    else:
+        spatial = evidence["residual_spatial_diagnostic"]
+        assert spatial["status"] == "ok" and spatial["n_edges"] > 0
+        assert spatial["n_tracts"] + spatial["n_isolated"] == evidence["n_complete"]
+        assert catalog.manifest["spatial_weights"]["source_id"] in model["source_ids"]

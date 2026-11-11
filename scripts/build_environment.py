@@ -177,7 +177,27 @@ def amenity_counts(elements, tract_ids, polygons):
     return counts, len(records)
 
 
-def enrich_study(root: Path):
+def write_tract_adjacency(frame, polygons, output, manifest):
+    """Write an undirected edge per within-metro pair sharing a boundary or corner."""
+    from shapely import STRtree
+
+    edges = []
+    for positions in frame.groupby("metro").indices.values():
+        metro_polygons = [polygons[i] for i in positions]
+        left, right = STRtree(metro_polygons).query(metro_polygons, predicate="touches")
+        geoids = frame.geoid.iloc[positions].to_numpy()
+        edges.extend(tuple(sorted((geoids[i], geoids[j]))) for i, j in zip(left, right) if i < j)
+    adjacency = pd.DataFrame(sorted(edges), columns=["left", "right"])
+    path = output / "tract-adjacency.csv"
+    adjacency.to_csv(path, index=False)
+    manifest["files"][path.name] = digest(path)
+    manifest["spatial_weights"] = {"method": "binary within-metro queen contiguity",
+                                  "source_id": "census-tract-polygons-2023",
+                                  "edges": len(adjacency)}
+    manifest["caveats"] = [c for c in manifest["caveats"] if "No tract adjacency file is included" not in c]
+
+
+def enrich_study(root: Path, *, with_tract_adjacency: bool = False):
     from shapely import make_valid
     from shapely.geometry import shape
 
@@ -298,11 +318,20 @@ def enrich_study(root: Path):
     frame.to_csv(candidate / "tracts.csv", index=False)
     coverage.to_csv(candidate / "coverage.csv", index=False)
     manifest["files"].update({name: digest(candidate / name) for name in ["tracts.csv", "coverage.csv"]})
+    artifacts = ["tracts.csv", "coverage.csv", "audit.json"]
+    if with_tract_adjacency:
+        write_tract_adjacency(frame, polygons, candidate, manifest)
+        artifacts.append("tract-adjacency.csv")
+    else:
+        manifest["files"].pop("tract-adjacency.csv", None)
+        manifest.pop("spatial_weights", None)
     (candidate / "manifest.json").write_text(json.dumps(manifest, indent=2, allow_nan=False) + "\n")
     (candidate / "audit.json").write_text(json.dumps(audit, indent=2) + "\n")
-    Catalog(candidate)
-    for name in ["tracts.csv", "coverage.csv", "audit.json", "manifest.json"]:
+    _ = Catalog(candidate).adjacency
+    for name in [*artifacts, "manifest.json"]:
         (candidate / name).replace(output / name)
+    if not with_tract_adjacency:
+        (output / "tract-adjacency.csv").unlink(missing_ok=True)
     print(json.dumps(audit["environment"], indent=2), flush=True)
     return output
 
@@ -310,6 +339,7 @@ def enrich_study(root: Path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
+    parser.add_argument("--with-tract-adjacency", action="store_true", help="Include tract edges for residual Moran’s I")
     args = parser.parse_args()
     raw = args.root / "data/raw/study"
     raw.mkdir(parents=True, exist_ok=True)
@@ -318,4 +348,4 @@ if __name__ == "__main__":
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             raise SystemExit("A data build is already running") from None
-        enrich_study(args.root)
+        enrich_study(args.root, with_tract_adjacency=args.with_tract_adjacency)

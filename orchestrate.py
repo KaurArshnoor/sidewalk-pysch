@@ -124,7 +124,7 @@ def compare(data: Finding, literature: Finding) -> tuple[Verdict, str]:
         return "direction_unclear", "the data interval includes zero, so their direction is uncertain"
     theirs = _literature_direction(study.get("effect"))
     if theirs is None:
-        return "direction_unclear", "the study's abstract reports no effect size to compare"
+        return "direction_unclear", "no single effect estimate was recorded for comparison"
     if theirs == 0:
         return "direction_unclear", "the study's interval includes no association"
     ours = -1 if data.evidence["estimate"] < 0 else 1

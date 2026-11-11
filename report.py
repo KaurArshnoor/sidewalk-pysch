@@ -9,7 +9,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from data import AgentResult, Finding, PaperSource, Source
+from data import CAUSAL_LIMIT, CLUSTER_LIMIT, MODELED_OUTCOME, AgentResult, Finding, PaperSource, Source
 
 Hedge = Literal["established", "suggests", "exploratory", "unknown"]
 Heading = Literal["Question", "What the literature says", "What our data show",
@@ -63,6 +63,10 @@ def where(report: Report, section: int, sentence: int) -> str:
     return f"{report.sections[section].heading} sentence {sentence + 1}"
 
 
+def normalized_sentence(text: str) -> str:
+    return " ".join(text.casefold().split()).rstrip(".")
+
+
 def check_report_items(report: Report, findings: dict[str, Finding]) -> list[tuple[int, int, str]]:
     """Rule violations as (section index, sentence index, message)."""
     problems = []
@@ -80,12 +84,17 @@ def check_report_items(report: Report, findings: dict[str, Finding]) -> list[tup
             cited = [findings[f] for f in sentence.finding_ids]
             if not cited and section.heading not in UNCITED_OK:
                 problems.append((si, i, "makes a claim without citing a finding"))
-            if cited:
+            # The strength of a result does not limit a verbatim, supported statement of its methods.
+            supported_caveat = section.heading == "Limitations and caveats" and any(
+                normalized_sentence(sentence.text) == normalized_sentence(caveat)
+                for f in cited for caveat in f.caveats if not caveat.startswith(PROVENANCE)
+            )
+            if cited and not supported_caveat:
                 ceiling = min((CEILING[f.confidence] for f in cited), key=HEDGE_RANK.__getitem__)
                 if HEDGE_RANK[sentence.hedge] > HEDGE_RANK[ceiling]:
                     problems.append((si, i, f"worded as '{sentence.hedge}' but the cited evidence only "
                                             f"supports '{ceiling}'"))
-            if any(f.agent != "literature" for f in cited) and CAUSAL.search(sentence.text):
+            if not supported_caveat and any(f.agent != "literature" for f in cited) and CAUSAL.search(sentence.text):
                 problems.append((si, i, "causal wording about tract-level data associations"))
             if section.heading == "What the literature says" and any(f.agent != "literature" for f in cited):
                 problems.append((si, i, "the literature section cites a data finding"))
@@ -101,12 +110,41 @@ def check_report(report: Report, findings: dict[str, Finding]) -> list[str]:
     return [f"{where(report, si, i)}: {message}" for si, i, message in check_report_items(report, findings)]
 
 
+def retain_analysis_caveats(report: Report, findings: dict[str, Finding]) -> Report:
+    """Keep essential limitations from the cited models even if the Writer omits them."""
+    cited = {fid for section in report.sections for sentence in section.sentences for fid in sentence.finding_ids}
+    compared = {findings[fid].evidence.get("data_finding") for fid in cited
+                if fid in findings and findings[fid].agent == "reconciler"}
+    models = [f for f in findings.values() if f.id in cited | compared and f.agent == "analyst"
+              and "estimate" in f.evidence]
+    required = []
+    for text in (CAUSAL_LIMIT, MODELED_OUTCOME, CLUSTER_LIMIT):
+        ids = [f.id for f in models if text in f.caveats]
+        if ids:
+            required.append(Sentence(text=text, finding_ids=ids, hedge="established"))
+    if not required:
+        return report
+    existing = [s for section in report.sections if section.heading == "Limitations and caveats"
+                for s in section.sentences]
+    required_text = {normalized_sentence(s.text) for s in required}
+    optional = [s for s in existing if normalized_sentence(s.text) not in required_text]
+    limitations = Section(heading="Limitations and caveats",
+                          sentences=required + optional[:MAX_LIMITATIONS - len(required)])
+    sections = [s for s in report.sections if s.heading != limitations.heading]
+    return report.model_copy(update={"sections": [*sections, limitations]})
+
+
 def writer_item(f: Finding) -> dict:
     """What the Writer sees per finding: the wording ceiling is given, not left for the model to look up."""
     item = {"id": f.id, "agent": f.agent, "claim": f.claim, "confidence": f.confidence,
             "strongest_wording": CEILING[f.confidence]}
     if f.agent == "reconciler":
         item["verdict"] = f.evidence["verdict"]
+    if f.agent == "literature":
+        item["measured_exposure"] = f.evidence.get("exposure")
+        item["measured_outcome"] = f.evidence.get("outcome")
+        item["preregistered"] = f.evidence.get("preregistered")
+        item["strength"] = f.evidence.get("strength")
     ci = f.evidence.get("ci95") if f.agent != "reconciler" else None
     if ci and "estimate" in f.evidence:
         item["interval_includes_zero"] = ci[0] <= 0 <= ci[1]

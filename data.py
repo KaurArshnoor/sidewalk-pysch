@@ -6,6 +6,7 @@ import hashlib
 import json
 import time
 from dataclasses import dataclass, field
+from functools import cached_property
 from pathlib import Path
 from typing import Literal
 
@@ -185,6 +186,26 @@ class Catalog:
             if not ids or not set(ids) <= self.source_ids:
                 raise ValueError(f"Missing provenance for {col}")
 
+    @cached_property
+    def adjacency(self) -> pd.DataFrame | None:
+        expected = self.manifest["files"].get("tract-adjacency.csv")
+        if expected is None:
+            return None
+        path = self.directory / "tract-adjacency.csv"
+        if digest(path) != expected:
+            raise ValueError("Tract adjacency checksum mismatch")
+        edges = pd.read_csv(path, dtype=str)
+        weights = self.manifest.get("spatial_weights", {})
+        if weights.get("source_id") not in self.source_ids or weights.get("edges") != len(edges):
+            raise ValueError("Tract adjacency provenance or edge count does not match the manifest")
+        if list(edges.columns) != ["left", "right"] or edges.empty or edges.duplicated().any():
+            raise ValueError("Invalid tract adjacency edge list")
+        metros = self.frame.set_index("geoid").metro
+        left, right = edges.left.map(metros), edges.right.map(metros)
+        if left.isna().any() or not left.eq(right).all() or not edges.left.lt(edges.right).all():
+            raise ValueError("Tract adjacency must connect distinct, known tracts within the same metro")
+        return edges
+
     def subset(self, metro: str | None = None) -> pd.DataFrame:
         frame = self.frame if metro is None else self.frame[self.frame.metro == metro]
         if frame.empty:
@@ -208,6 +229,7 @@ class Catalog:
             "columns": self.manifest["column_sources"],
             "scope": self.manifest.get("scope", {}),
             "definitions": self.manifest.get("definitions", {}),
+            "spatial_weights": self.manifest.get("spatial_weights"),
             "caveats": self.caveats(),
             "sources": [s.model_dump() for s in self.sources],
         }
@@ -217,7 +239,32 @@ class Catalog:
 CONTROLS = ["poverty_pct", "income", "age65_pct", "black_pct", "hispanic_pct", "pop_density"]
 
 
-def association(frame: pd.DataFrame, adjusted: bool, moderator: str | None = None) -> dict:
+SPATIAL_CAVEAT = ("Residual Moran’s I is descriptive. It uses tracts sharing a boundary or corner within a metro "
+                  "and reports no significance test. Metro clustering is the covariance method when enough metros are available.")
+
+
+def residual_moran(residuals: pd.Series, adjacency: pd.DataFrame | None) -> dict:
+    """Binary, symmetric contiguity on the complete-case graph, excluding isolates."""
+    if adjacency is None:
+        return {"status": "not_run", "reason": "No tract adjacency file loaded"}
+    left = residuals.index.get_indexer(adjacency.left)
+    right = residuals.index.get_indexer(adjacency.right)
+    retained = (left >= 0) & (right >= 0)
+    left, right = left[retained], right[retained]
+    linked = np.unique(np.concatenate([left, right]))
+    if not linked.size:
+        return {"status": "insufficient", "reason": "No adjacent complete-case tracts"}
+    values = residuals.to_numpy()
+    centered = values - values[linked].mean()
+    variation = float(centered[linked] @ centered[linked])
+    if variation <= np.finfo(float).eps:
+        return {"status": "insufficient", "reason": "No meaningful residual variation among adjacent tracts"}
+    return {"status": "ok", "moran_i": float(len(linked) * (centered[left] @ centered[right]) / (len(left) * variation)),
+            "n_tracts": int(len(linked)), "n_isolated": int(len(values) - len(linked)), "n_edges": int(len(left))}
+
+
+def association(frame: pd.DataFrame, adjusted: bool, moderator: str | None = None, *,
+                adjacency: pd.DataFrame | None = None) -> dict:
     if moderator not in {None, "poverty_pct", "park_access_pct"}:
         raise ValueError("Supported moderators: poverty_pct or park_access_pct")
     columns = ["geoid", "metro", "walkability", "distress_pct"]
@@ -225,6 +272,8 @@ def association(frame: pd.DataFrame, adjusted: bool, moderator: str | None = Non
         columns += CONTROLS
     if moderator:
         columns.append(moderator)
+    if adjacency is not None:
+        columns.append("geoid")
     missing = sorted(set(columns) - set(frame.columns))
     if missing:
         return {"status": "insufficient", "reason": f"Missing required columns: {missing}"}
@@ -257,8 +306,10 @@ def association(frame: pd.DataFrame, adjusted: bool, moderator: str | None = Non
     fitted = model.fit(cov_type="cluster", cov_kwds={"groups": d.metro}, use_t=True) if groups >= 10 else model.fit()
     term = "walkability:moderator_10pp" if moderator else "walkability"
     ci = fitted.conf_int().loc[term].tolist() if groups >= 10 else None
+    residuals = pd.Series(fitted.resid.to_numpy(), index=d.geoid) if adjacency is not None else fitted.resid
     return {
-        **base, "status": "ok", "formula": formula, "term": term,
+        **base, "status": "ok",
+        "residual_spatial_diagnostic": residual_moran(residuals, adjacency), "formula": formula, "term": term,
         "estimate": float(fitted.params[term]), "ci95": ci,
         "p_value": float(fitted.pvalues[term]) if groups >= 10 else None,
         "pearson_r": float(d.walkability.corr(d.distress_pct)), "r_squared": float(fitted.rsquared),
@@ -269,9 +320,12 @@ def association(frame: pd.DataFrame, adjusted: bool, moderator: str | None = Non
 
 
 # Tools used by the agents
+CAUSAL_LIMIT = "Cross-sectional tract associations cannot establish causation or individual effects."
+MODELED_OUTCOME = "CDC PLACES is modeled from BRFSS and census/ACS inputs, not a direct survey of each tract."
+CLUSTER_LIMIT = "Confidence intervals are suppressed for models with fewer than ten metro clusters."
 ASSOCIATION_CAVEATS = [
-    "Cross-sectional tract associations cannot establish causation or individual effects (ecological inference).",
-    "CDC PLACES is modeled from BRFSS and census/ACS inputs, not a direct survey of each tract.",
+    CAUSAL_LIMIT,
+    MODELED_OUTCOME,
     "PLACES outcomes and ACS controls share demographic modeling inputs; adjusted patterns may partly reflect those models rather than independent tract health observations.",
     "PLACES model uncertainty and ACS margins of error are not propagated into regression intervals.",
     "Residential self-selection, reverse causality, and unmeasured confounding remain possible.",
@@ -294,8 +348,8 @@ class WorkContext:
     def sources(self) -> list[Source]:
         return self.catalog.sources
 
-    def finding(self, claim: str, evidence: dict, columns: list[str], caveats: list[str], confidence="descriptive"):
-        source_ids = self.catalog.sources_for(columns)
+    def finding(self, claim: str, evidence: dict, columns: list[str], caveats: list[str], confidence="descriptive", *, extra_sources: tuple[str, ...] = ()):
+        source_ids = sorted(set(self.catalog.sources_for(columns)) | set(extra_sources))
         source_notes = [note for source in self.catalog.sources if source.id in source_ids for note in source.notes]
         body = {"agent": self.role, "claim": claim, "evidence": evidence,
                 "source_ids": source_ids, "confidence": confidence,
@@ -336,6 +390,13 @@ class WorkContext:
                 coverage, list(self.catalog.manifest["column_sources"]),
                 ["Coverage describes the loaded snapshot; it does not independently verify a top-20 metro universe."],
             )
+            if self.role == "health_demographics" and {"cdc-places-2025", "acs5-2023-bulk"} <= self.catalog.source_ids:
+                methods = {"cdc_places": MODELED_OUTCOME,
+                           "acs": "The ACS values are period estimates from five years of survey data (2019–2023)."}
+                metadata["health_measure_finding"] = self.finding(
+                    " ".join(methods.values()), {"measurement_methods": methods},
+                    ["distress_pct", "population"], ["The CDC and ACS measures describe different source periods."],
+                )
             return metadata
         if name == "profile":
             allowed = {"built_environment": {"walkability", "amenities_per_1000", "amenities_count",
@@ -367,21 +428,28 @@ class WorkContext:
             if self.role != "analyst":
                 raise ValueError("Only the analyst can fit models")
             d = self.catalog.subset(arguments.get("metro"))
-            result = association(d, arguments.get("adjusted", True), arguments.get("moderator"))
+            result = association(d, arguments.get("adjusted", True), arguments.get("moderator"),
+                                 adjacency=self.catalog.adjacency)
             if result["status"] != "ok":
                 return result
             result["metro_filter"] = arguments.get("metro")
-            result["residual_spatial_diagnostic"] = {"status": "not_run", "reason": "No tract adjacency file loaded"}
             modifier = arguments.get("moderator")
             units = "percentage points of frequent mental distress per 1-point walkability increase"
             if modifier:
                 units += f", slope change per 10 percentage points of {modifier}"
             claim = (f"The {'adjusted' if result['adjusted'] else 'unadjusted'} tract-level association is "
                      f"{result['estimate']:.4f} {units} (n={result['n_complete']}; {result['n_metros']} metros).")
+            spatial = result["residual_spatial_diagnostic"]
+            if spatial["status"] == "ok":
+                claim += f" Residual Moran’s I is {spatial['moran_i']:.3f} across {spatial['n_tracts']:,} tracts with neighbors."
             columns = ["walkability", "distress_pct"]
             if result["adjusted"]:
                 columns += CONTROLS
             if modifier:
                 columns += [modifier]
-            return self.finding(claim, result, columns, ASSOCIATION_CAVEATS, confidence="exploratory")
+            caveats = ASSOCIATION_CAVEATS + ([CLUSTER_LIMIT] if result["ci95"] is None else [])
+            spatial_source = self.catalog.manifest.get("spatial_weights", {}).get("source_id")
+            used_spatial = spatial["status"] == "ok"
+            return self.finding(claim, result, columns, caveats + ([SPATIAL_CAVEAT] if used_spatial else []),
+                                confidence="exploratory", extra_sources=(spatial_source,) if used_spatial and spatial_source else ())
         raise ValueError(f"Unknown tool: {name}")
