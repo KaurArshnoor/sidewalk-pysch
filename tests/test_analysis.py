@@ -1,7 +1,8 @@
 import numpy as np
+import pandas as pd
 import pytest
 
-from data import association
+from data import association, residual_moran
 
 
 def test_recovers_known_association(catalog):
@@ -59,3 +60,14 @@ def test_interaction_units(catalog, moderator):
 def test_unknown_moderator_rejected(catalog):
     with pytest.raises(ValueError):
         association(catalog.frame, adjusted=True, moderator="loneliness")
+
+
+
+def test_moran_distinguishes_grouped_residuals_and_excludes_missing_neighbors():
+    edges = pd.DataFrame({"left": ["a", "b", "c"], "right": ["b", "missing", "d"]})
+    grouped = pd.Series([-1.0, -1.0, 1.0, 1.0, 99.0], index=["a", "b", "c", "d", "isolated"])
+    alternating = pd.Series([-1.0, 1.0, -1.0, 1.0, 99.0], index=grouped.index)
+    result = residual_moran(grouped, edges)
+    assert result["moran_i"] == pytest.approx(1.0)
+    assert (result["n_edges"], result["n_tracts"], result["n_isolated"]) == (2, 4, 1)
+    assert residual_moran(alternating, edges)["moran_i"] == pytest.approx(-1.0)

@@ -23,7 +23,7 @@ ESUMMARY = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
 
 Status = Literal["ok", "not_found", "metadata_mismatch", "retracted", "expression_of_concern",
                  "corrected", "unchecked", "lookup_failed"]
-EXCLUDE = {"retracted", "not_found"}  # findings citing these sources are removed before writing
+EXCLUDE = {"retracted", "not_found", "metadata_mismatch"}  # findings citing these sources are removed before writing
 
 
 class CitationCheck(BaseModel):
@@ -98,7 +98,7 @@ def assess(source: PaperSource, crossref: dict | None, pubmed: dict | None,
     if "expression_of_concern" in updates or "Expression of Concern" in pubtypes:
         return check("expression_of_concern", "An expression of concern has been published")
 
-    mismatches = [f"{name} not found" for name in identifiers if name not in found]
+    mismatches = []
     looked_up = []
     if crossref is not None:
         looked_up.append(("Crossref", titles[0] if titles else "", _crossref_year(crossref)))
@@ -117,7 +117,11 @@ def assess(source: PaperSource, crossref: dict | None, pubmed: dict | None,
         return check("metadata_mismatch", "; ".join(mismatches))
     if updates & {"correction", "erratum", "corrigendum"}:
         return check("corrected", "A correction has been published; the study is kept")
-    return check("ok", "Found in " + " and ".join(name for name, _, _ in looked_up))
+    matched = "Found in " + " and ".join(name for name, _, _ in looked_up)
+    missing = [name for name in identifiers if name not in found]
+    if missing:
+        matched += f" (no record for {' or '.join(missing)})"
+    return check("ok", matched)
 
 
 async def check_source(client: httpx.AsyncClient, source: Source | PaperSource,
@@ -156,7 +160,7 @@ async def check_citations(sources: list[Source | PaperSource],
 
 
 def exclude_bad_sources(results: list[AgentResult], checks: list[CitationCheck]):
-    """Remove findings that cite retracted or missing papers. Returns (results, gaps)."""
+    """Remove findings that cite retracted, missing, or mismatched papers. Returns (results, gaps)."""
     bad = {c.source_id: c for c in checks if c.status in EXCLUDE}
     titles = {s.id: s.title for r in results for s in r.sources}
     kept = []
@@ -165,7 +169,7 @@ def exclude_bad_sources(results: list[AgentResult], checks: list[CitationCheck])
         cited = {s for f in findings for s in f.source_ids}
         kept.append(result.model_copy(update={"findings": findings,
                                                "sources": [s for s in result.sources if s.id in cited]}))
-    label = {"retracted": "retracted", "not_found": "unverifiable"}
+    label = {"retracted": "retracted", "not_found": "unverifiable", "metadata_mismatch": "mismatched"}
     gaps = [f"Excluded {label[c.status]} study: {titles.get(c.source_id, c.source_id)} ({c.details})."
             for c in bad.values()]
     return kept, gaps
@@ -176,7 +180,7 @@ def citation_notes(checks: list[CitationCheck]) -> list[str]:
     if not papers:
         return ["No literature citations to check; dataset sources were verified when the data were built."]
     notes = [f"Checked {len(papers)} paper citation(s) against Crossref/PubMed; "
-             f"{sum(c.status == 'ok' for c in papers)} matched."]
+             f"{sum(c.status in ('ok', 'corrected') for c in papers)} matched."]
     notes += [f"{c.source_id}: {c.status.replace('_', ' ')}. {c.details}" for c in papers if c.status != "ok"]
     return notes
 

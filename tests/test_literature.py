@@ -142,6 +142,8 @@ async def test_record_study_rejects_unchecked_extractions(ctx):
     for expected, arguments in cases.items():
         result = await ctx.invoke("record_study", **arguments)
         assert result["status"] == "error" and expected in result["reason"], (expected, result)
+    flipped_sign = await ctx.invoke("record_study", **base, effect_metric="beta", effect_value=-float(n))
+    assert flipped_sign["status"] == "error" and "does not appear in the quote" in flipped_sign["reason"]
     observational = without_randomization(ctx)
     claim_rct = dict(base, paper_id=observational.id, quote=observational.abstract[:80].rsplit(" ", 1)[0], design="rct")
     result = await ctx.invoke("record_study", **claim_rct)
@@ -236,3 +238,33 @@ async def test_run_agent_returns_paper_sources(monkeypatch):
     assert isinstance(result.sources[0], PaperSource) and result.findings[0].source_ids == [result.sources[0].id]
     assert [c.name for c in calls] == ["search_pubmed", "record_study"]
     assert AgentResult.model_validate(result.model_dump()).sources[0].doi == result.sources[0].doi
+
+
+
+async def test_empty_literature_result_reviews_existing_abstracts(monkeypatch):
+    pytest.importorskip("agents")
+    import agents
+    from app import run_agent
+
+    monkeypatch.setenv("SIDEWALK_MODEL", "vertex_ai/gemini-3.5-flash-lite")
+
+    async def fake_run(agent, prompt, *, context, **kwargs):
+        if not context.reviewing_abstracts:
+            name, concepts = SEARCHES[0]
+            await context.invoke(name, concepts=concepts)
+            return SimpleNamespace(final_output=AgentDecision(finding_ids=[], gaps=["No effect size."],
+                                                              clarification=None),
+                                   to_input_list=lambda: [{"role": "user", "content": prompt}])
+        wrapped = agents.RunContextWrapper(context=context)
+        assert all(not tool.is_enabled(wrapped, agent) for tool in agent.tools if tool.name.startswith("search_"))
+        paper, sentence, _ = with_number(context)
+        finding = await context.invoke("record_study", paper_id=paper.id, design="cross_sectional",
+                                       quote=sentence, exposure="walkability", outcome="mental health")
+        return SimpleNamespace(final_output=AgentDecision(finding_ids=[finding["id"]], gaps=[], clarification=None))
+
+    monkeypatch.setattr(agents.Runner, "run", fake_run)
+    async with httpx.AsyncClient(transport=transport()) as client:
+        result, calls = await run_agent("literature", "What does research say about walkability?",
+                                        ROOT / "data/processed/study", client=client)
+    assert result.findings and result.findings[0].evidence["effect"] is None
+    assert [c.name for c in calls] == ["search_pubmed", "record_study"]

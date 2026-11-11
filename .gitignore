@@ -223,5 +223,8 @@ __marimo__/
 data/raw/
 evals/results/
 
+# macOS Finder metadata
+.DS_Store
+
 # Orchestrated study runs (see save_run in app.py)
 runs/

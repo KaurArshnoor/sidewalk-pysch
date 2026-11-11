@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from data import ROOT, AgentResult, Finding, PaperSource
+from data import CAUSAL_LIMIT, ROOT, AgentResult, Finding, PaperSource
 from report import Report, Section, Sentence, check_report, pool, render, writer_prompt
 
 SAVED = ROOT / "docs/study/live-agent-checks.json"
@@ -62,6 +62,15 @@ def test_causal_wording_about_data_is_flagged(results, analyst):
     draft = report("What our data show",
                    Sentence(text="Walkability reduces distress.", finding_ids=[analyst.id], hedge="exploratory"))
     assert any("causal" in p for p in check_report(draft, findings))
+
+
+def test_supported_limitation_can_use_direct_wording(analyst):
+    finding = analyst.model_copy(update={"caveats": [CAUSAL_LIMIT]})
+    caveat = Sentence(text=CAUSAL_LIMIT, finding_ids=[finding.id], hedge="established")
+    draft = report("Limitations and caveats", caveat)
+    assert check_report(draft, {finding.id: finding}) == []
+    unsupported = caveat.model_copy(update={"text": CAUSAL_LIMIT + " Walkability reduces distress."})
+    assert check_report(report("Limitations and caveats", unsupported), {finding.id: finding})
 
 
 def test_uncited_claim_and_wrong_section_are_flagged(results, analyst):

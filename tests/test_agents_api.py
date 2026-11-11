@@ -155,3 +155,14 @@ async def test_sse_keeps_the_selected_metro(api_app):
         assert events[-1]["type"] == "done"
         profiles = [f["evidence"] for f in events[-1]["result"]["findings"] if "statistics" in f["evidence"]]
         assert profiles and all(p["metro_filter"] == "12060" and p["n_metros"] == 1 for p in profiles)
+
+
+
+async def test_analyst_does_not_fit_distress_for_a_loneliness_only_question():
+    from app import configuration, run_agent
+
+    result, calls = await run_agent("analyst", "Do the results agree with the literature on loneliness and walkability?",
+                                    configuration())
+    assert result.status == "insufficient" and not result.findings
+    assert [call.name for call in calls] == ["dataset_metadata"]
+    assert any("literature findings" in gap for gap in result.gaps)

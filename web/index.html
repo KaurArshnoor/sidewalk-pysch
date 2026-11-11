@@ -161,15 +161,15 @@
     <div><div class="eyebrow">Neighborhoods &amp; mental health · a research workbench</div><h1>Sidewalk Psych</h1>
     <p>For researchers studying walkability and mental health. Inspect neighborhood measures, check their limits, test tract-level associations, and compare them with published research.</p>
     <span id="mode" class="badge">Checking dataset…</span></div></div></header>
-  <section><h2>Explore a metro area</h2><p class="muted">Choose a metro and a specialist. Analyze neighborhood patterns, then inspect the supporting evidence.</p>
+  <section><h2>Explore a metro area</h2><p class="muted">Choose a metro, then ask a question about walkability, park access, or mental distress. Full study compares the tract results with published research. Open Tool calls to see the evidence.</p>
     <form id="task"><label for="metro">Metro area</label><select id="metro"><option value="">All 20 metros</option></select>
       <p class="muted">Metro areas include the city and surrounding counties, rather than city limits.</p><label for="agent">Specialist</label><select id="agent">
       <option value="built_environment">Built environment researcher · walkability, amenities, parks</option>
       <option value="health_demographics">Health and demographics researcher · CDC + ACS</option>
-      <option value="analyst" selected>Analyst · unadjusted and adjusted associations</option>
+      <option value="analyst">Analyst · unadjusted and adjusted associations</option>
       <option value="literature">Literature researcher · PubMed, OpenAlex, PsyArXiv (metro not used)</option>
-      <option value="study">Full study · plans, runs the agents, compares literature and data, writes a verified report</option></select>
-      <label for="question">Question</label><textarea id="question" maxlength="2000">Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?</textarea>
+      <option value="study" selected>Full study · plans, runs the agents, compares literature and data, writes a verified report</option></select>
+      <label for="question">Question</label><textarea id="question" maxlength="2000">How do unadjusted and adjusted walkability–mental-distress associations compare with published research on depression?</textarea>
       <button id="run">Explore data</button><span id="status" role="status"></span></form>
   </section>
   <section><h2>Findings</h2><p id="scope" class="muted"></p><div id="route" hidden aria-label="Study progress"></div><article id="report" hidden></article><div id="cards" hidden></div><div id="response">The selected agent's tool-supported findings will appear here.</div>
@@ -492,6 +492,14 @@
         this.set('plan', 'done', n ? `${n} agent${n === 1 ? '' : 's'} chosen` : 'Needs clarification');
         for (const task of event.tasks) this.agentRow(task.role, task.sub_question);
         if (n) this.set('research', 'active', this.researchDetail());
+      } else if (event.stage === 'followup') {
+        for (const task of event.tasks) {
+          const agent = this.agents[task.role];
+          if (agent) agent.done = false;
+          this.agentUpdate(task.role, 'active', task.sub_question);
+        }
+        this.set('compare', 'idle', '');
+        this.set('research', 'active', 'Following up on an evidence gap');
       } else if (event.stage === 'agent') {
         const agent = this.agents[event.role]; if (!agent) return;
         agent.done = true;
@@ -675,7 +683,7 @@
     if(event.report&&event.report.view&&event.report.view.sections){try{renderReport(event.report,event.agents)}catch(err){console.error(err);$('report').hidden=true;$('response').hidden=false;$('response').textContent=event.report.markdown}}
     else{const plan=event.agents.map(a=>`- ${a.role}: ${a.status}${a.error?' ('+a.error+')':` (${a.findings} findings)`} · ${a.sub_question}`).join('\n');
       $('response').textContent=(event.report?event.report.markdown:event.clarification)+(plan?'\n\n---\nPlan\n'+plan:'')}
-    $('findings').textContent=JSON.stringify(event.results,null,2);$('tools').textContent=JSON.stringify({plan:event.plan,notes:event.plan_notes,agents:event.agents},null,2)}
+    $('findings').textContent=JSON.stringify(event.results,null,2);$('tools').textContent=JSON.stringify({plan:event.plan,followup_tasks:event.followup_tasks,notes:event.plan_notes,agents:event.agents},null,2)}
   $('agent').onchange=()=>{$('question').value=samples[$('agent').value]};
   fetch('/metadata').then(r=>{if(!r.ok)throw Error('Snapshot unavailable');return r.json()}).then(m=>{
     $('mode').textContent=(m.synthetic?'Synthetic test data':'Real study data')+' · '+Number(m.rows).toLocaleString()+' tracts'+(m.metros&&m.metros.length?' · '+m.metros.length+' metro areas':'');if(m.synthetic)$('mode').classList.add('warn');

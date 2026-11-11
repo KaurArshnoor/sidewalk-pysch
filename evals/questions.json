@@ -22,7 +22,11 @@
     "agent": "analyst",
     "question": "Compare the unadjusted and demographically adjusted associations between walkability and frequent mental distress.",
     "reference": "Both models, counts, controls, metro fixed effects, clustered uncertainty, no causal conclusion.",
-    "minimum_associations": 2
+    "minimum_associations": 2,
+    "adjustment_modes": [
+      false,
+      true
+    ]
   },
   {
     "id": "B02",
@@ -46,7 +50,8 @@
     "id": "B04",
     "agent": "built_environment",
     "question": "Are these the 20 largest US metros, and which census boundaries are being used?",
-    "reference": "Twenty metros ranked by 2023 population; 2023 tract inventory. Disclose the Pennsylvania health-data omission."
+    "reference": "Twenty metros ranked by 2023 population; 2023 tract inventory. Disclose the Pennsylvania health-data omission.",
+    "expect_metadata": true
   },
   {
     "id": "B05",
@@ -99,7 +104,8 @@
     "id": "H06",
     "agent": "health_demographics",
     "question": "Is CDC PLACES a direct survey of every census tract, and is ACS a single-year survey?",
-    "reference": "PLACES uses modeled small-area estimates; ACS 5-year estimates cover a period."
+    "reference": "PLACES uses modeled small-area estimates; ACS 5-year estimates cover a period.",
+    "expect_measurement_methods": true
   },
   {
     "id": "A02",
@@ -126,13 +132,19 @@
     "agent": "analyst",
     "question": "Report the association and how many observations are excluded by missing controls.",
     "reference": "Adjusted complete-case model counts available, complete, and excluded.",
-    "minimum_associations": 1
+    "minimum_associations": 1,
+    "adjustment_modes": [
+      true
+    ]
   },
   {
     "id": "A06",
     "agent": "analyst",
-    "question": "How do you handle spatial dependence in the walkability-distress analysis?",
-    "reference": "Metro-clustered covariance with fixed effects; Moran diagnostic only if adjacency exists. Limits remain."
+    "question": "Fit the adjusted walkability–distress model and check its residuals for spatial dependence.",
+    "reference": "Fits an adjusted model and explains metro-clustered errors. Reports descriptive residual Moran’s I if available, or explains that the bundled snapshot has no tract adjacency.",
+    "minimum_associations": 1,
+    "adjustment_modes": [true],
+    "expect_spatial_diagnostic": true
   },
   {
     "id": "A07",
@@ -146,7 +158,11 @@
     "agent": "analyst",
     "question": "Do the results agree with the literature on loneliness and walkability?",
     "reference": "This data-only agent lacks literature findings and direct loneliness data. Flag the missing literature handoff.",
-    "expect_gap": true
+    "expect_gap": true,
+    "gap_topics": [
+      "literature",
+      "lonel"
+    ]
   },
   {
     "id": "L01",
@@ -160,7 +176,12 @@
     "agent": "literature",
     "question": "What do studies report about neighborhood walkability and loneliness or social connection?",
     "reference": "Names loneliness or social-connection outcomes as measured and does not substitute depression or distress studies for them; records gaps when evidence is thin.",
-    "expect_gap": true
+    "outcome_terms": [
+      "lonel",
+      "social",
+      "isolat",
+      "cohesion"
+    ]
   },
   {
     "id": "S01",
@@ -172,19 +193,29 @@
       "literature"
     ],
     "expect_reconciliation": true,
-    "max_removed": 2
+    "max_removed": 2,
+    "adjustment_modes": [
+      false,
+      true
+    ]
   },
   {
     "id": "S02",
     "agent": "study",
-    "question": "Is walkability linked to loneliness, and does the link differ in poorer neighborhoods?",
-    "reference": "Adds literature for loneliness; analyst fits the poverty interaction; marks modeled distress versus loneliness as not comparable rather than agreement.",
+    "question": "What does research say about walkability and loneliness? Separately, compare unadjusted and adjusted tract walkability–frequent-mental-distress associations, and test whether the distress association varies with tract poverty. Can the tract estimates answer the loneliness question?",
+    "reference": "Separately reports direct loneliness literature, both distress models and the poverty interaction. The comparison explicitly distinguishes the outcomes.",
     "expected_roles": [
       "analyst",
       "literature"
     ],
     "expect_reconciliation": true,
-    "max_removed": 2
+    "max_removed": 2,
+    "adjustment_modes": [
+      false,
+      true
+    ],
+    "moderator": "poverty_pct",
+    "expected_verdict": "not_comparable"
   },
   {
     "id": "S03",

@@ -92,7 +92,7 @@ uv run pytest -q
 
 The initial build downloads approximately 1 GB of cached public inputs to `data/raw/study` (ignored by Git and Docker). Keep the prepared `data/processed/study` snapshot with the app; its individual files are below GitHub’s 100 MB limit. `tracts.csv` is the agent table; `metros.csv`, `counties.csv`, `coverage.csv`, `crosswalk.csv`, `geography-comparison.csv`, `audit.json`, and `manifest.json` make the join reviewable. The manifest records hashes and column provenance.
 
-Tract means and regression coefficients are not population-average individual effects. CDC outcomes are modeled and share demographic inputs with ACS controls. Crosswalk estimates, missingness, model uncertainty, source-year differences and small numbers of metro clusters limit interpretation. No adjacency file is included, so residual Moran diagnostics remain unavailable.
+Tract means and regression coefficients are not population-average individual effects. CDC outcomes are modeled and share demographic inputs with ACS controls. Crosswalk estimates, missingness, model uncertainty, source-year differences and small numbers of metro clusters limit interpretation. Regression intervals use metro-clustered errors when at least ten metro clusters are available. To enable descriptive residual Moran’s I, run `uv run python -m scripts.build_environment --with-tract-adjacency`. The optional build records pairs of tracts that share a boundary or corner within the same metro. The diagnostic uses complete-case tracts, binary weights, and excludes isolated tracts.
 
 ## Validation
 

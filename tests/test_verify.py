@@ -9,7 +9,7 @@ import httpx
 import pytest
 
 import verify
-from data import ROOT, AgentResult, Finding, PaperSource
+from data import CAUSAL_LIMIT, MODELED_OUTCOME, ROOT, AgentResult, Finding, PaperSource
 from report import Report, Section, Sentence, pool
 from scripts.record_verify_responses import SOURCES
 from verify import (Verdict, VerifierOutput, check_citations, check_numbers, exclude_bad_sources,
@@ -79,6 +79,8 @@ async def test_title_and_year_mismatch():
     check = (await checks([wrong]))["valid"]
     assert check.status == "metadata_mismatch"
     assert "title" in check.details and "year" in check.details
+    kept, gaps = exclude_bad_sources([lit(wrong)], [check])
+    assert kept[0].findings == [] and "Excluded mismatched study" in gaps[0]
 
 
 async def test_dataset_sources_are_not_looked_up(results):
@@ -197,13 +199,18 @@ async def test_still_flagged_sentences_are_removed(monkeypatch, results, analyst
         Sentence(text="In this exploratory model the association is negative.", finding_ids=[analyst.id],
                  hedge="exploratory"),
         Sentence(text="Walkable places clearly protect mental health.", finding_ids=[analyst.id],
-                 hedge="exploratory")])], gaps=[])
+                 hedge="exploratory"),
+        Sentence(text="A sentence with an invented citation.", finding_ids=["f-unknown"], hedge="exploratory")
+    ])], gaps=[])
     verdicts = VerifierOutput(verdicts=[Verdict(sentence=1, status="supported", reason="matches"),
-                                        Verdict(sentence=2, status="overstated", reason="causal and certain")])
+                                        Verdict(sentence=2, status="overstated", reason="causal and certain"),
+                                        Verdict(sentence=3, status="supported", reason="missed the unknown ID")])
     monkeypatch.setattr(agents.Runner, "run", fake_runner([report], [verdicts], []))
     async with httpx.AsyncClient(transport=transport()) as client:
         out = await write_verified_report("q", results, client=client)
-    assert out.rounds == 2 and len(out.removed) == 1
+    assert out.rounds == 2 and len(out.removed) == 2
     assert "clearly protect" not in out.markdown.split("## Open gaps")[0]
     assert "Removed an unverified statement" in out.markdown
     assert "association is negative" in out.markdown
+    limitations = next(s for s in out.report["sections"] if s["heading"] == "Limitations and caveats")
+    assert {CAUSAL_LIMIT, MODELED_OUTCOME} <= {s["text"] for s in limitations["sentences"]}

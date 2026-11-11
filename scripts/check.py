@@ -79,10 +79,55 @@ async def compare_baselines():
         print(role + ': baseline saved', flush=True)
 
 
+GRADER_QUERIES = (
+    ("built_environment", "Across the 20 metros, what are the mean EPA walkability score and the number of tracts with a score? Give the scale."),
+    ("health_demographics", "Is CDC PLACES a direct survey of each tract? What period do the ACS measures cover? Answer in two sentences."),
+    ("study", "Across the 20 metros, compare unadjusted and adjusted walkability–mental-distress associations. How do they compare with published research on walkability and depression? Keep the report brief."),
+)
+
+
+async def grader_samples():
+    from datetime import datetime, timezone
+
+    import litellm
+
+    from app import app
+
+    litellm.suppress_debug_info = True
+    model = os.environ["SIDEWALK_MODEL"]
+    rows = []
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://local") as client:
+        for role, question in GRADER_QUERIES:
+            print(f"Recording {role} sample", flush=True)
+            response = await client.post("/chat", json={"agent": role, "message": question})
+            response.raise_for_status()
+            body = response.json()
+            if role == "study":
+                assert body["result"]["report"] and len({c["agent"] for c in body["tool_calls"]}) >= 2
+            else:
+                assert body["result"]["findings"] and body["tool_calls"]
+            baseline = await litellm.acompletion(
+                model=model, messages=[{"role": "user", "content": question}],
+                vertex_location=os.getenv("VERTEX_LOCATION", "global"), timeout=60, num_retries=0,
+            )
+            rows.append({"agent": role, "question": question, "model": model,
+                         "checked_at": datetime.now(timezone.utc).isoformat(),
+                         "baseline_no_system_no_tools": baseline.choices[0].message.content,
+                         "agent_response": body})
+    path = ROOT / "evals/results/grader-samples.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(rows, indent=2, allow_nan=False) + "\n")
+    print(f"Saved {len(rows)} grader comparisons to {path}", flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Check the real LLM agents and optionally capture no-tools baselines")
     parser.add_argument("--baselines", action="store_true", help="Also make three same-model calls without tools or a system prompt")
+    parser.add_argument("--grader-samples", action="store_true", help="Record the three README examples and no-tools baselines")
     args = parser.parse_args()
-    asyncio.run(main())
-    if args.baselines:
-        asyncio.run(compare_baselines())
+    if args.grader_samples:
+        asyncio.run(grader_samples())
+    else:
+        asyncio.run(main())
+        if args.baselines:
+            asyncio.run(compare_baselines())
