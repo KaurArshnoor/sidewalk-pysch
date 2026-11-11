@@ -19,6 +19,8 @@ uv run app.py --agent analyst --question "Compare unadjusted and adjusted walkab
 
 To run a full study (planner → agents in parallel → literature–data reconciliation → Writer ↔ Verifier), use `--agent study`, or choose **Full study** on the page. The Lead starts researchers in fresh contexts in parallel, then can ask for one focused follow-up round. Each full run is saved to `runs/<run_id>.json`.
 
+The Lead is the planner agent (`create_planner()` in `app.py`) plus `orchestrate()`. In one turn, the planner splits the question into sub-questions, one per researcher, and `orchestrate()` runs them in parallel. After that round, the planner reviews the researchers' gaps and may propose one follow-up round.
+
 ```sh
 uv run app.py --agent study --question "Is walkability linked to lower mental distress, and how does that compare with research on walkability and depression?"
 ```
@@ -70,6 +72,17 @@ The main limit is **OpenAlex**: without a key, about 100 searches per day are sh
 ## Data
 
 The only shipped dataset is **`data/processed/study`**: 30,056 tracts in the 20 largest metros by Census 2023 population, with 28,150 complete adjusted-analysis cases. It joins EPA walkability, CDC modeled mental-distress estimates, ACS demographics, derived ParkServe access, and OSM gathering-place counts.
+
+How to load the data:
+
+```python
+import pandas as pd
+
+tracts = pd.read_csv("data/processed/study/tracts.csv", dtype={"geoid": str, "metro": str})
+tracts[["geoid", "metro", "walkability", "distress_pct", "poverty_pct", "park_access_pct"]].describe()
+```
+
+Each row is one census tract, keyed by `geoid`, the 11-digit tract code. `metro` is the five-digit CBSA code; `metros.csv` gives the metro names. The main columns are `walkability` (EPA, 1–20), `distress_pct` (CDC PLACES frequent mental distress), the ACS measures `income`, `poverty_pct`, `black_pct`, `hispanic_pct` and `age65_pct`, plus `park_access_pct` and `amenities_per_1000`.
 
 The [study notes](docs/study/README.md) explain sources, years, crosswalk weights, and quality checks. The data folder includes the main tract table, metro/county membership, coverage, crosswalk, boundary comparisons, and source/audit records.
 
@@ -160,9 +173,9 @@ No, CDC PLACES does not conduct a direct survey of every census tract; instead, 
 
 > Across the 20 metros, compare unadjusted and adjusted walkability–mental-distress associations. How do they compare with published research on walkability and depression? Keep the report brief.
 
-**Expected answer.** The pooled coefficients are about +0.0563 unadjusted and −0.0659 adjusted, in percentage points of modeled distress per walkability point. The literature comparison depends on each paper’s measured exposure and outcome.
+**Expected answer.** The pooled coefficients are about +0.0563 unadjusted (95% CI −0.0041 to 0.1167, so its direction is uncertain) and −0.0659 adjusted (95% CI −0.1004 to −0.0313), in percentage points of modeled distress per walkability point. The literature comparison depends on each paper’s measured exposure and outcome.
 
-**Evidence.** [tracts.csv](data/processed/study/tracts.csv), the analyst’s regression tool, and paper records from PubMed and OpenAlex.
+**Evidence.** [tracts.csv](data/processed/study/tracts.csv) via `association()` in [data.py](data.py) (the analyst’s `association` tool, unadjusted and adjusted); papers from the PubMed E-utilities and OpenAlex `/works` APIs; run through `POST /chat` or `GET /study/run`.
 
 <details>
 <summary>Sidewalk Psych answer</summary>
