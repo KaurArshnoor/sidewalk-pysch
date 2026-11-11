@@ -29,7 +29,29 @@ uv run app.py --agent study --question "Is walkability linked to lower mental di
 
 ## Agents
 
-Every agent is defined in [app.py](app.py) and uses the model set by `SIDEWALK_MODEL` in .env. The four research agents can be run alone. Use the name below with `--agent` in the command line, or as `agent` in `POST /chat` and `GET /run`. The planner, Writer and Verifier run only inside a full study (`--agent study`, `POST /chat` with `agent: "study"`, or `GET /study/run`).
+Sidewalk Psych is a **multi-agent system**. Seven LLM agents and one Python step split the work. Each agent has its own instructions, tools, and fresh context, and it sees only what is handed to it. Agents never share a conversation. Instead they pass typed handoffs: a `Plan`, `AgentResult` findings, a `Report`, and `VerifierOutput`. Two patterns are combined:
+
+- **Orchestrator–workers.** The planner (Lead) breaks the question into sub-questions. `orchestrate()` runs the chosen research agents at the same time with `asyncio.gather`. The Lead then reviews their gaps and may send one follow-up round. If one agent fails or runs out of time, the study keeps going with that agent's partial findings and a recorded gap.
+- **Evaluator–optimizer.** The Writer drafts the report, the Verifier judges each sentence, and the Writer revises. Sentences that still fail are removed.
+
+```text
+                      question
+                         │
+                   Planner (Lead) ──── Plan: one sub-question per agent
+          ┌──────────┬───┴──────┬───────────┐   (run in parallel, fresh contexts)
+   built_environment  health_demographics  analyst  literature
+          └──────────┴───┬──────┴───────────┘
+                         │ AgentResult findings ──► optional follow-up round (Lead)
+               citation checks (Python)
+                         │
+                Reconciler (Python) ──── data vs. literature verdicts
+                         │
+                 Writer ⇄ Verifier ──── up to 3 rounds
+                         │
+                 verified report → runs/<run_id>.json
+```
+
+Every agent is defined in [app.py](app.py) and uses the model set by `SIDEWALK_MODEL` in .env. The four research agents can also be run alone. Use the name below with `--agent` in the command line, or as `agent` in `POST /chat` and `GET /run`. The planner, Writer and Verifier run only inside a full study (`--agent study`, `POST /chat` with `agent: "study"`, or `GET /study/run`).
 
 ### Research agents (run alone or in a full study)
 
@@ -56,8 +78,8 @@ The three data agents call no outside services and read only `data/processed/stu
 1. Planner
 2. Research agents, in parallel with fresh contexts
 3. An optional follow-up round
-4. Reconciler
-5. Citation checks, which screen literature sources before the Writer sees them
+4. Citation checks, which screen literature sources before they are compared or written up
+5. Reconciler
 6. Writer ↔ Verifier, up to 3 rounds. The final report keeps the essential limitations of the models it cites.
 7. The report, agent status, tool calls and findings are saved to `runs/<run_id>.json`. Use `--write-from` to generate a report from saved agent results.
 
@@ -70,7 +92,7 @@ The three data agents call no outside services and read only `data/processed/stu
 | `GET /study/run?question=&metro=` | Runs a full study, streaming progress (used by the page) |
 | `GET /metadata`, `GET /health` | Dataset scope and provenance; status check |
 
-## Read the code
+## Reading the code
 
 | File | Purpose |
 |---|---|
@@ -160,7 +182,7 @@ uv run python -m scripts.build_data
 
 This caches public downloads under `data/raw/study`, checks source files and geographic coverage, applies the published population crosswalk, and exports the prepared snapshot. Raw downloads are ignored by Git and Docker. To add or rebuild just the two environment layers on an existing core snapshot, run `uv run python -m scripts.build_environment`. Both builds use the same process lock and resume cached downloads. The crosswalk is documented and checked in code, not independently peer reviewed.
 
-## Questions for the grader
+## Questions for grading
 
 Select the listed specialist and leave the metro selector at **All 20 metros**. These paired responses were captured with the same model, `vertex_ai/gemini-3.5-flash-lite`. The baseline received the identical question as a single user message.
 
