@@ -1,8 +1,12 @@
 # Sidewalk Psych
 
-Sidewalk Psych is a research workbench for students, planners, and public-health researchers comparing neighborhood walkability with mental distress. It combines a custom census-tract dataset for the 20 largest US metros with published research. Built on the Wikipedia starter’s structure: agents, tools, and FastAPI routes in `app.py`; data access in `data.py`; the original context panel alongside the page. Literature research, verification, and report writing integrate through the shared findings format.
+Sidewalk Psych is a deep research data exploration agent for students, planners, and public-health researchers comparing neighborhood walkability with mental distress. Sidewalk Psych touches upon the fields of urban health and environmental psychology, ultimately investigating how the places we live in can affect the way that we feel.
 
-## Run
+We ultimately hope to be able to answer questions like "do people in walkable neighborhoods have better mental health, less, loneliness, or more social connection, and if so why?
+
+In order to do this, we combine a custom census-tract dataset for the 20 largest US metros with published research. This project is built on the given Wikipedia starter code's structure from class, namely: agents, tools, and FastAPI routes in `app.py`; data access in `data.py`; and the original context panel alongside the page. Literature research, verification, and report writing have been integrated through the shared findings format.
+
+## Running the Code
 
 ```sh
 uv sync
@@ -17,13 +21,54 @@ To run one agent directly:
 uv run app.py --agent analyst --question "Compare unadjusted and adjusted walkability–mental-distress associations."
 ```
 
-To run a full study (planner → agents in parallel → literature–data reconciliation → Writer ↔ Verifier), use `--agent study`, or choose **Full study** on the page. The Lead starts researchers in fresh contexts in parallel, then can ask for one focused follow-up round. Each full run is saved to `runs/<run_id>.json`.
-
-The Lead is the planner agent (`create_planner()` in `app.py`) plus `orchestrate()`. In one turn, the planner splits the question into sub-questions, one per researcher, and `orchestrate()` runs them in parallel. After that round, the planner reviews the researchers' gaps and may propose one follow-up round.
+To run a full study, use `--agent study` or choose the **Full study** option on the left of the page. The steps are listed under [Agents](#agents).
 
 ```sh
 uv run app.py --agent study --question "Is walkability linked to lower mental distress, and how does that compare with research on walkability and depression?"
 ```
+
+## Agents
+
+Every agent is defined in [app.py](app.py) and uses the model set by `SIDEWALK_MODEL` in .env. The four research agents can be run alone. Use the name below with `--agent` in the command line, or as `agent` in `POST /chat` and `GET /run`. The planner, Writer and Verifier run only inside a full study (`--agent study`, `POST /chat` with `agent: "study"`, or `GET /study/run`).
+
+### Research agents (run alone or in a full study)
+
+| Agent (`agent` value) | Purpose | Tools | Data sources | Limits |
+|---|---|---|---|---|
+| **Built environment** (`built_environment`) | Describes walkability, park access and mapped gathering places. Fits no models. | `dataset_metadata`, `profile` | EPA National Walkability Index; Trust for Public Land ParkServe 10-minute walk areas plus 2020 Census block points; OpenStreetMap gathering places (`walkability`, `park_access_pct`, `amenities_per_1000`) | 8 turns, 240 s |
+| **Health & demographics** (`health_demographics`) | Describes modeled frequent mental distress and ACS demographics, and how those measures are produced. Fits no models. | `dataset_metadata`, `profile` | CDC PLACES 2025 (BRFSS 2023); ACS 2019–2023 five-year estimates (`distress_pct`, `income`, `poverty_pct`, `black_pct`, `hispanic_pct`, `age65_pct`) | 8 turns, 240 s |
+| **Analyst** (`analyst`, the default for `/run`) | Fits unadjusted and adjusted walkability–distress models, plus optional poverty or park-access interactions. Uses metro-clustered errors and can report residual Moran’s I. | `dataset_metadata`, `profile`, `fit_association` (at most 4 calls) | The same tract table, through `association()` in [data.py](data.py) | 8 turns, 240 s |
+| **Literature** (`literature`) | Finds published studies, including on loneliness, social connection and mechanisms that the data cannot measure. Records each study's design, exposure, outcome and an exact quote from its abstract. | `search_pubmed`, `search_openalex`, `search_psyarxiv` (at most 2 calls each), `record_study` (at most 10) | PubMed E-utilities, OpenAlex `/works`, PsyArXiv ([literature.py](literature.py)) | 20 turns, 360 s |
+
+The three data agents call no outside services and read only `data/processed/study`. Choosing a named metro in the web form restricts every data tool to that metro (city limits are not the unit of analysis). The restriction is enforced in Python rather than left to the model. A single metro gives exploratory within-metro coefficients, and confidence intervals are suppressed because only one metro cluster is available. Loneliness, social connection, and explanations still require the literature findings. All four research agents return `AgentDecision`, which may only cite finding IDs their own tools produced. These are assembled into an `AgentResult` with `findings` (`claim, evidence, source_ids, confidence, caveats`), `sources`, `gaps` and `clarification`.
+
+### Pipeline agents (full study only)
+
+| Agent | Purpose | Tools | Inputs → output |
+|---|---|---|---|
+| **Planner / Lead** (`create_planner()`) | Splits the question into one self-contained sub-question per research agent, and may then propose one follow-up round to close important gaps | none | Question → `Plan`, checked by `validate_plan()` in [orchestrate.py](orchestrate.py) |
+| **Reconciler** (`reconcile()` in [orchestrate.py](orchestrate.py)) | Compares each data finding with each literature finding and gives a verdict: agrees, conflicts, direction unclear, or not comparable. Plain Python, not an LLM. | none | Research `AgentResult`s → `AgentResult` (`agent: "reconciler"`) |
+| **Writer** (`create_writer()`) | Writes the report from pooled findings only, and revises it in response to Verifier feedback | none | Findings → `Report` ([report.py](report.py)) |
+| **Verifier** (`create_verifier()`) | Judges whether the cited findings support each sentence (supported, overstated, unsupported, or misattributed). Before writing starts, citations are checked in Python against Crossref, PubMed and retraction data. Sentences that still fail are removed. | none (its checks run in [verify.py](verify.py)) | Report and findings → `VerifierOutput` |
+
+**Full-study flow.** `orchestrate()` runs the steps in this order:
+
+1. Planner
+2. Research agents, in parallel with fresh contexts
+3. An optional follow-up round
+4. Reconciler
+5. Citation checks, which screen literature sources before the Writer sees them
+6. Writer ↔ Verifier, up to 3 rounds. The final report keeps the essential limitations of the models it cites.
+7. The report, agent status, tool calls and findings are saved to `runs/<run_id>.json`. Use `--write-from` to generate a report from saved agent results.
+
+### Endpoints
+
+| Route | Use |
+|---|---|
+| `POST /chat` | `{"message", "agent"?, "metro"?}`. `agent` defaults to `"study"`. `metro` is an optional five-digit CBSA code. Returns `response` and `tool_calls` at the top level, plus `result` (the structured report) and `run_id` (the trace reference). For a full study, `tool_calls` covers both research rounds and tags each call with its `agent`. |
+| `GET /run?question=&agent=&metro=` | Runs one research agent, streaming progress events (SSE) to the context panel |
+| `GET /study/run?question=&metro=` | Runs a full study, streaming progress (used by the page) |
+| `GET /metadata`, `GET /health` | Dataset scope and provenance; status check |
 
 ## Read the code
 
@@ -59,10 +104,6 @@ docs/study/            source methods and recorded results
 
 The offline build is separate from answering questions.
 
-The built-environment agent describes EPA walkability, derived ParkServe access, and mapped OSM gathering places. The health/demographics agent describes CDC and ACS measures. The analyst computes unadjusted/adjusted models and poverty or park-access interactions. All return `claim, evidence, source_ids, confidence, caveats` for the shared Writer. Numerical claims come from Python tools; the model can select only findings those tools produced.
-
-Choose a named metro in the web form to restrict all data tools to that metro; city limits are not the unit of analysis. A selected metro shows exploratory within-metro coefficients, with confidence intervals suppressed because only one metro cluster is available. The selector is enforced in Python, rather than relying on the model to remember it. Loneliness, social connection, and explanations still require the literature findings.
-
 ## Notes on External APIs
 
 No API keys are required, except for the Census API. The literature researcher searches PubMed, OpenAlex and PsyArXiv; the Verifier checks citations against Crossref and PubMed. The data agents and Writer call no outside services at runtime.
@@ -73,7 +114,7 @@ The main limit is **OpenAlex**: without a key, about 100 searches per day are sh
 
 The only shipped dataset is **`data/processed/study`**: 30,056 tracts in the 20 largest metros by Census 2023 population, with 28,150 complete adjusted-analysis cases. It joins EPA walkability, CDC modeled mental-distress estimates, ACS demographics, derived ParkServe access, and OSM gathering-place counts.
 
-How to load the data:
+**How to load the data:**
 
 ```python
 import pandas as pd
@@ -86,7 +127,9 @@ Each row is one census tract, keyed by `geoid`, the 11-digit tract code. `metro`
 
 The [study notes](docs/study/README.md) explain sources, years, crosswalk weights, and quality checks. The data folder includes the main tract table, metro/county membership, coverage, crosswalk, boundary comparisons, and source/audit records.
 
-**Coverage limitation:** CDC omits Pennsylvania’s selected health outcome; Philadelphia’s available health sample covers only its non-Pennsylvania portions. Park access remains missing where ParkServe does not cover every populated block point or the tract fails boundary review. Direct loneliness and social connection are not measured.
+**Coverage limitation:** 
+
+CDC omits Pennsylvania’s selected health outcome; Philadelphia’s available health sample covers only its non-Pennsylvania portions. Park access remains missing where ParkServe does not cover every populated block point or the tract fails boundary review. Direct loneliness and social connection are not measured.
 
 Park access is a study-derived percentage using 2020 block population points within published 10-minute walk service areas, not an official TPL tract statistic. OSM counts selected mapped features per 1,000 ACS residents; mapping omissions, duplicate representations, and fee-based venues limit interpretation. See the study notes for definitions and source terms.
 
@@ -106,7 +149,7 @@ uv run python -m scripts.build_data --check-census
 
 `scripts/check.py` checks the live agents. Run `uv run python -m scripts.check --grader-samples` to record the five grader examples and their same-model baselines under the ignored evals/results directory. Keep API keys in `.env`.
 
-## Rebuild data (optional)
+## Rebuilding the data (optional)
 
 The prepared data are included; rebuilding is only needed when changing sources or releases.
 
@@ -506,19 +549,4 @@ uv run python -m evals.run --judge
 
 This project follows the **Deep Research** path. Its 25 hand-authored regression cases cover the data agents, literature search, and full studies. Deterministic checks inspect the requested models, provenance, citation screening, comparisons, and whether model caveats survived. With `--judge`, a model scores each case out of four for coverage, grounding, correct measures and scope, and uncertainty. Per-case checks, rubric judgments, findings and elapsed times are saved under `evals/results/`.
 
-Send `{"message": "your question"}` to `POST /chat` for a full study, or set `agent` to one of the specialists. An optional five-digit `metro` code restricts the tract analysis. The response keeps `response` and `tool_calls` at the top level. Full-study `tool_calls` includes the calls from both research rounds, each with its `agent` name. The `result` and `run_id` fields include the structured report and trace reference. The page uses `/study/run` to stream progress.
-
-Full studies screen literature citations before comparing findings. The Writer revises in response to the Verifier, and the final report retains essential limitations of the models it cites. The report, agent status, tool calls and findings are saved in `runs/<run_id>.json`. Use `--write-from` to generate a report from saved agent results.
-
-## Cloud Run deployment
-
-The container ships the prepared study under `data/processed/study`. It is about 19 MB in total, and each file is below GitHub’s 100 MB file limit. The Docker build excludes local credentials, raw downloads, saved runs, and eval outputs.
-
-Deploy the `sidewalk-psych` service in the course project `ieor-test-project`. The container listens on `PORT`. Set the Cloud Run request timeout to 300 seconds. The app caps web studies at 270 seconds, with at most two research rounds.
-
-1. Create the runtime identity `sidewalk-psych@ieor-test-project.iam.gserviceaccount.com` with the Vertex AI User role. Cloud Run uses that identity to call the configured Vertex model.
-2. In the Cloud Run console, connect the GitHub repository for continuous deployment from `main`. Select the root `Dockerfile` for the build and configure the service to allow public access. Set `SIDEWALK_MODEL` to `vertex_ai/gemini-3.5-flash-lite`, `VERTEX_LOCATION` to `global`, and `GOOGLE_CLOUD_PROJECT` and `VERTEXAI_PROJECT` to `ieor-test-project`.
-3. After the build deploys, open the service URL in a signed-out browser. Check `/health` and run one of the sample questions as a full study. Confirm that the report and agent-labeled tool calls arrive within five minutes.
-4. Record that service URL in `submission.json` and push it to the grading branch. Confirm the course grader accounts have access to the private repository. Submit the GitHub repository URL through Courseworks.
-
-Google documents the [GitHub continuous deployment setup](https://docs.cloud.google.com/run/docs/continuous-deployment) and [request timeout setting](https://docs.cloud.google.com/run/docs/configuring/request-timeout).
+The API is described under [Endpoints](#endpoints).
