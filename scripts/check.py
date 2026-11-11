@@ -83,6 +83,8 @@ GRADER_QUERIES = (
     ("built_environment", "Across the 20 metros, what are the mean EPA walkability score and the number of tracts with a score? Give the scale."),
     ("health_demographics", "Is CDC PLACES a direct survey of each tract? What period do the ACS measures cover? Answer in two sentences."),
     ("study", "Across the 20 metros, compare unadjusted and adjusted walkability–mental-distress associations. How do they compare with published research on walkability and depression? Keep the report brief."),
+    ("study", "Do people in walkable neighborhoods have better mental health, less loneliness, or more social connection, and if so, why?"),
+    ("study", "How does the link between walkability and mental health, loneliness, or social connection vary with neighborhood demographics and access to public gathering places, and what evidence supports possible explanations?"),
 )
 
 
@@ -123,7 +125,7 @@ async def grader_samples():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Check the real LLM agents and optionally capture no-tools baselines")
     parser.add_argument("--baselines", action="store_true", help="Also make three same-model calls without tools or a system prompt")
-    parser.add_argument("--grader-samples", action="store_true", help="Record the three README examples and no-tools baselines")
+    parser.add_argument("--grader-samples", action="store_true", help="Record the five README examples and no-tools baselines")
     args = parser.parse_args()
     if args.grader_samples:
         asyncio.run(grader_samples())

@@ -104,7 +104,7 @@ uv run python -m scripts.check
 uv run python -m scripts.build_data --check-census
 ```
 
-`scripts/check.py` checks the live agents. Run `uv run python -m scripts.check --grader-samples` to record the three grader examples and their same-model baselines under the ignored evals/results directory. Keep API keys in `.env`.
+`scripts/check.py` checks the live agents. Run `uv run python -m scripts.check --grader-samples` to record the five grader examples and their same-model baselines under the ignored evals/results directory. Keep API keys in `.env`.
 
 ## Rebuild data (optional)
 
@@ -169,7 +169,7 @@ No, CDC PLACES does not conduct a direct survey of every census tract; instead, 
 
 </details>
 
-### 3. Full study
+### 3. Full study: unadjusted vs. adjusted models
 
 > Across the 20 metros, compare unadjusted and adjusted walkability–mental-distress associations. How do they compare with published research on walkability and depression? Keep the report brief.
 
@@ -249,6 +249,251 @@ The findings across the 20 metros align closely with the broader literature on w
 
 **Conclusion:**
 Unadjusted metro data overstates the direct mental health benefits of walkability by capturing underlying socioeconomic advantages. Adjusted findings mirror published literature, confirming that while walkability supports mental well-being, its independent effect is modest once individual- and neighborhood-level socioeconomic factors are controlled.
+
+</details>
+
+### 4. Full study: walkability, mental health, and loneliness
+
+> Do people in walkable neighborhoods have better mental health, less loneliness, or more social connection, and if so, why?
+
+**Expected answer.** Partly, and only for mental health in our data. Adjusted for demographics, the tract-level association is about −0.0659 percentage points of modeled frequent mental distress per walkability point (95% CI −0.1004 to −0.0313); unadjusted it is +0.0563 with an interval that includes zero. These are neighborhood associations, not effects on individual people. The data have no loneliness or social-connection measure, so those parts come from the literature, and the comparison should mark such papers as not comparable with modeled distress. The data cannot show why; any explanation (for example physical activity or contact with neighbors) comes from published studies and should be worded as a possible mechanism, not a cause.
+
+**Evidence.** [tracts.csv](data/processed/study/tracts.csv) via `association()` in [data.py](data.py) (the analyst’s `association` tool, unadjusted and adjusted); papers from the PubMed E-utilities, OpenAlex `/works` and PsyArXiv searches, checked against Crossref; run through `POST /chat` or `GET /study/run`.
+
+<details>
+<summary>Sidewalk Psych answer</summary>
+
+## Question
+
+Do people in walkable neighborhoods have better mental health, less loneliness, or more social connection, and if so, why?
+
+## What the literature says
+
+A longitudinal study suggests that neighborhoods with high walkability are associated with lower symptoms of hyperactivity and inattention [1]. A cross-sectional study suggests that neighborhood walkability is positively related to social interactions with neighbors [2].
+
+## What our data show
+
+In this exploratory model, the unadjusted tract-level association is 0.0563 percentage points of frequent mental distress per 1-point walkability increase, and the direction of that association is uncertain [3, 4, 5, 6]. In this exploratory model, the adjusted tract-level association is -0.0659 percentage points of frequent mental distress per 1-point walkability increase [7, 3, 4, 5, 6]. In this exploratory model, the adjusted tract-level association is -0.0191 percentage points of frequent mental distress per 1-point walkability increase, slope change per 10 percentage points of poverty_pct [7, 3, 4, 5, 6]. In this exploratory model, the adjusted tract-level association is 0.0003 percentage points of frequent mental distress per 1-point walkability increase, slope change per 10 percentage points of park_access_pct, and the direction of that association is uncertain [7, 3, 4, 8, 5, 6, 9].
+
+## Where they agree or disagree
+
+The unadjusted tract-level estimate cannot be compared with a longitudinal study of symptoms of hyperactivity and inattention because the study measured symptoms of hyperactivity and inattention, not mental distress [3, 4, 5, 6, 1]. The unadjusted tract-level estimate cannot be compared with a cross sectional study of social interactions with neighbors because the study measured social interactions with neighbors, while our data measure modeled frequent mental distress, not loneliness or social connection [3, 4, 5, 6, 2]. The adjusted tract-level estimate cannot be compared with a longitudinal study of symptoms of hyperactivity and inattention because the study measured symptoms of hyperactivity and inattention, not mental distress [7, 3, 4, 5, 6, 1]. The adjusted tract-level estimate cannot be compared with a cross sectional study of social interactions with neighbors because the study measured social interactions with neighbors, while our data measure modeled frequent mental distress, not loneliness or social connection [7, 3, 4, 5, 6, 2].
+
+## Limitations and caveats
+
+Cross-sectional tract associations cannot establish causation or individual effects [3, 4, 5, 6, 7, 8, 9]. CDC PLACES is modeled from BRFSS and census/ACS inputs, not a direct survey of each tract [3, 4, 5, 6, 7, 8, 9]. The study combines older built-environment measures, interpolated population weights, ACS period estimates, and modeled 2023 health outcomes [3, 4, 5, 6]. In this exploratory model, analyses and interactions are exploratory and no multiple-testing adjustment is applied [3, 4, 5, 6]. A cross-sectional study suggests that cross-sectional design cannot establish direction, causation, or individual-level effects [2].
+
+## Open gaps
+
+- No direct measures of perceived safety, social connection, or loneliness are included in the dataset.
+- OpenStreetMap gathering-place counts represent mapped features rather than verified unique venues, and ParkServe service areas rely on study-derived block population point approximations rather than official TPL tract statistics.
+
+## Verification
+
+- Checked 2 paper citation(s) against Crossref/PubMed; 2 matched.
+- Rounds of writing and verification: 2.
+
+## References
+
+1. D Parker, E Chazelas, M Melchior (2026). Neighborhood walkability with children’s mental health in the French ELFE cohort. *European Journal of Public Health*. https://doi.org/10.1093/eurpub/ckag169.274
+2. Jacob Carson, Terry L. Conway, Lilian G. Perez et al. (2023). Neighborhood walkability, neighborhood social health, and self-selection among U.S. adults. *Health & Place*. https://doi.org/10.1016/j.healthplace.2023.103036
+3. Amos (2021), 2020 Census Block Crosswalk Data, V2. V2, CC BY 4.0; 2019 block groups → 2020 blocks. https://doi.org/10.7910/DVN/T9VMJO (retrieved 2026-11-08).
+4. CDC PLACES frequent mental distress, crude prevalence. 2025 release; BRFSS MHLTH 2023. https://chronicdata.cdc.gov/resource/cwsq-ngmh.json (retrieved 2026-11-08).
+5. Census TIGERweb 2023 ACS tract land areas. 2023 ACS geography, compared with Census 2020 tract inventory. https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2023/MapServer/8 (retrieved 2026-11-08).
+6. EPA National Walkability Index. 2021 index; SLD 2019 geography; service GEOID20 labeled 2018; population TotPop 2018. https://edg.epa.gov/data/Public/OA/WalkabilityIndex.zip (retrieved 2026-11-08).
+7. ACS 2019–2023 five-year Detailed Tables, official bulk files. 2023 ACS five-year. https://www2.census.gov/programs-surveys/acs/summary_file/2023/table-based-SF/data/5YRData (retrieved 2026-11-08).
+8. Census 2020 populated block counts and internal points. 2020 Census; retrieved 2026-11-08T21:59:20.554324+00:00. https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/10 (retrieved 2026-11-08).
+9. Trust for Public Land ParkServe public parks and 10-minute walk service areas. Public service snapshot retrieved 2026-11-08T21:59:19.239019+00:00. https://www.tpl.org/park-data-downloads (retrieved 2026-11-08).
+
+</details>
+
+<details>
+<summary>Same model with no tools or system prompt</summary>
+
+The short answer is **yes**. A vast and growing body of research in public health, urban planning, psychology, and sociology shows that people living in walkable neighborhoods generally enjoy **better mental health, lower rates of loneliness, and stronger social connections** than those living in car-dependent, sprawling areas. 
+
+However, walkability is not a magical cure-all; rather, it acts as an **enabler** that makes positive social and psychological outcomes much easier to achieve.
+
+Here is a breakdown of what the research says, followed by the reasons *why* walkable neighborhoods have this effect.
+
+---
+
+### What the Research Shows
+
+1. **Lower Rates of Depression and Anxiety:** Studies consistently find that residents of walkable, mixed-use neighborhoods have lower risks of clinical depression and anxiety. For example, a landmark study of UK biobank data found that people who commute by walking or cycling have better mental health than those who drive.
+2. **Reduced Loneliness and Social Isolation:** Walkable neighborhoods encourage "weak ties"—casual interactions with neighbors, shopkeepers, and acquaintances. Research shows these low-stakes interactions are vital for buffering against loneliness.
+3. **Higher Social Capital:** Neighborhoods with pedestrian infrastructure tend to have higher "social capital," meaning residents trust each other more, feel a greater sense of community belonging, and are more likely to participate in civic life.
+4. **Cognitive Benefits for Older Adults:** Walkability promotes physical activity and social engagement, both of which are strongly correlated with delayed cognitive decline and lower rates of dementia in older populations.
+
+---
+
+### Why Does Walkability Improve Mental Health and Connection?
+
+Urban planners and psychologists point to several specific mechanisms that explain this connection:
+
+#### 1. The Power of "Micro-Interactions" (The Jane Jacobs Effect)
+In a car-centric suburb, you leave your garage, drive to a destination, and enter another building. You might not see a neighbor for days. 
+In a walkable neighborhood, you walk out your front door to get coffee or buy groceries. Along the way, you nod at a neighbor, chat briefly with the barista, or pet a dog. Sociologists call these **"weak ties."** While they aren't deep friendships, research shows that a high frequency of weak ties significantly reduces feelings of isolation and increases a general sense of safety and belonging.
+
+#### 2. Forced Physical Activity
+Walkability inherently bakes physical activity into daily life (active transportation). Walking releases endorphins, reduces cortisol (the stress hormone), and improves sleep—all of which directly combat anxiety and depression. Furthermore, physical activity outside exposes people to natural light and green spaces, which are proven mood boosters.
+
+#### 3. The "Eyes on the Street" Effect (Perceived Safety)
+Walkable neighborhoods are denser and have more pedestrian traffic. This creates what urbanist Jane Jacobs called "eyes on the street." When public spaces feel naturally populated and lively, people feel safer. Chronic fear and hyper-vigilance—which are common in socially isolated or high-crime car-dependent areas—take a heavy toll on mental health.
+
+#### 4. Spontaneous Socializing vs. Scheduled Socializing
+In sprawling areas, seeing a friend requires planning: getting in a car, driving 20 minutes, and coordinating schedules. This high friction makes people less likely to socialize. In walkable neighborhoods, socializing is frictionless. You run into a friend at the local park or market, turning a chore into a spontaneous social event.
+
+#### 5. Greater Autonomy for Vulnerable Populations
+Children, teenagers, the elderly, and people with disabilities who cannot drive suffer immensely from the isolation of car-dependent suburbs. Walkable neighborhoods give these groups **independence**. An elderly person who can safely walk to the library or a teenager who can walk to a park is vastly less isolated than one who is entirely dependent on others for transportation.
+
+---
+
+### Nuance and Caveats: It’s Not Just Concrete
+
+While the data favors walkable neighborhoods, researchers emphasize a few important caveats:
+
+* **Gentrification and Cost:** Walkable neighborhoods are often expensive. High housing costs and gentrification can cause severe financial stress and displacement, which negate the mental health benefits of walkability. 
+* **Design Quality Matters:** A walkable neighborhood with cracked sidewalks, heavy traffic noise, trash, and no trees can actually *increase* stress. Walkability must be paired with green space, aesthetic appeal, and safety to yield psychological benefits.
+* **Introverts vs. Extroverts:** While walkable neighborhoods reduce loneliness on average, hyper-dense environments can sometimes overwhelm introverts or people sensitive to sensory overload if they don't have adequate access to quiet spaces.
+
+### Summary
+Walkable neighborhoods do not guarantee happiness, but they remove the architectural barriers to human connection. By turning transportation into physical activity, transforming strangers into familiar faces, and giving people the freedom to move about their communities easily, walkable design fosters the fundamental ingredients of human well-being: **movement, nature, and community.**
+
+</details>
+
+### 5. Full study: differences by demographics and gathering places
+
+> How does the link between walkability and mental health, loneliness, or social connection vary with neighborhood demographics and access to public gathering places, and what evidence supports possible explanations?
+
+**Expected answer.** The data can test two moderators. Adjusted for demographics, poverty changes the link: −0.0191 per 10 percentage points of tract poverty (95% CI −0.0342 to −0.0040), so the inverse association with distress is stronger in poorer tracts. Park access does not once demographics are controlled: +0.0003 (95% CI −0.0064 to 0.0070), although the unadjusted interaction is −0.0209 (95% CI −0.0358 to −0.0059). Gathering places can be described (a mean of 1.17 mapped features per 1,000 residents, median 0.50) but are not modeled as a moderator, and the other demographics enter only as controls. Explanations come from the literature only, and loneliness and social connection are not measured in the data.
+
+**Evidence.** [tracts.csv](data/processed/study/tracts.csv) via `association(moderator="poverty_pct")` and `association(moderator="park_access_pct")` in [data.py](data.py), adjusted and unadjusted, plus the `amenities_per_1000` column for gathering places; papers from the PubMed E-utilities, OpenAlex `/works` and PsyArXiv searches, checked against Crossref; run through `POST /chat` or `GET /study/run`.
+
+<details>
+<summary>Sidewalk Psych answer</summary>
+
+## Question
+
+How does the link between walkability and mental health, loneliness, or social connection vary with neighborhood demographics and access to public gathering places, and what evidence supports possible explanations?
+
+## What the literature says
+
+A cross-sectional study of neighborhood walkability and social interactions with neighbors suggests that neighborhood walkability is positively related to social interactions with neighbors [1] A longitudinal study of neighborhood walkability and depressive symptoms suggests a protective association with neighborhood walkability [2] A cross-sectional study of neighborhood walkability and hyperactivity and inattention suggests that individuals living in highly walkable areas were significantly less likely to present symptoms of hyperactivity and inattention [3]
+
+## What our data show
+
+The unadjusted tract-level association is 0.0563 percentage points of frequent mental distress per 1-point walkability increase, and the direction of that association is uncertain [4, 5, 6, 7] The adjusted tract-level association is -0.0659 percentage points of frequent mental distress per 1-point walkability increase [8, 4, 5, 6, 7] The unadjusted tract-level association is -0.0306 percentage points of frequent mental distress per 1-point walkability increase, slope change per 10 percentage points of poverty_pct [8, 4, 5, 6, 7] The unadjusted tract-level association is -0.0209 percentage points of frequent mental distress per 1-point walkability increase, slope change per 10 percentage points of park_access_pct [4, 5, 9, 6, 7, 10]
+
+## Where they agree or disagree
+
+The unadjusted tract-level estimate cannot be compared with a cross sectional study of social interactions with neighbors [4, 5, 6, 7, 1] Whether the unadjusted tract-level estimate and a longitudinal study of depressive symptoms agree is unclear [4, 5, 6, 7, 2] The unadjusted tract-level estimate cannot be compared with a cross sectional study of hyperactivity and inattention [4, 5, 6, 7, 3] The adjusted tract-level estimate cannot be compared with a cross sectional study of social interactions with neighbors [8, 4, 5, 6, 7, 1] The adjusted tract-level estimate and a longitudinal study of depressive symptoms point the same way [8, 4, 5, 6, 7, 2] The adjusted tract-level estimate cannot be compared with a cross sectional study of hyperactivity and inattention [8, 4, 5, 6, 7, 3]
+
+## Limitations and caveats
+
+Cross-sectional tract associations cannot establish causation or individual effects [4, 5, 6, 7, 8, 9, 10]. CDC PLACES is modeled from BRFSS and census/ACS inputs, not a direct survey of each tract [4, 5, 6, 7, 8, 9, 10]. No direct loneliness or social-connection measures are loaded [4, 5, 6, 7, 8, 9, 10]. Cross-sectional design: cannot establish direction, causation, or individual-level effects [1, 3]. Measures depressive symptoms, not loneliness or social connection [2].
+
+## Open gaps
+
+- No direct observational measures of neighborhood social connection, actual amenity use, or perceived safety are loaded.
+- Park access calculations use 2020 block population points and TPL ParkServe 10-minute walk service areas, representing a study-derived approximation rather than official tract statistics.
+- Philadelphia metro distress estimates are partially omitted by CDC PLACES 2025 (Pennsylvania tracts missing).
+- Published studies specifically examining the direct causal link between walkability and loneliness are sparse or inconclusive.
+- Mechanisms underlying walkability, social connection, and mental health require more longitudinal and experimental evaluations.
+
+## Verification
+
+- Checked 3 paper citation(s) against Crossref/PubMed; 3 matched.
+- Rounds of writing and verification: 1.
+
+## References
+
+1. Jacob Carson, Terry L. Conway, Lilian G. Perez et al. (2023). Neighborhood walkability, neighborhood social health, and self-selection among U.S. adults. *Health & Place*. https://doi.org/10.1016/j.healthplace.2023.103036
+2. Ethan M. Berke, Laura M. Gottlieb, Anne Vernez Moudon et al. (2007). Protective Association Between Neighborhood Walkability and Depression in Older Men. *Journal of the American Geriatrics Society*. https://doi.org/10.1111/j.1532-5415.2007.01108.x
+3. D Parker, E Chazelas, M Melchior (2026). Neighborhood walkability with children’s mental health in the French ELFE cohort. *European Journal of Public Health*. https://doi.org/10.1093/eurpub/ckag169.274
+4. Amos (2021), 2020 Census Block Crosswalk Data, V2. V2, CC BY 4.0; 2019 block groups → 2020 blocks. https://doi.org/10.7910/DVN/T9VMJO (retrieved 2026-11-08).
+5. CDC PLACES frequent mental distress, crude prevalence. 2025 release; BRFSS MHLTH 2023. https://chronicdata.cdc.gov/resource/cwsq-ngmh.json (retrieved 2026-11-08).
+6. Census TIGERweb 2023 ACS tract land areas. 2023 ACS geography, compared with Census 2020 tract inventory. https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2023/MapServer/8 (retrieved 2026-11-08).
+7. EPA National Walkability Index. 2021 index; SLD 2019 geography; service GEOID20 labeled 2018; population TotPop 2018. https://edg.epa.gov/data/Public/OA/WalkabilityIndex.zip (retrieved 2026-11-08).
+8. ACS 2019–2023 five-year Detailed Tables, official bulk files. 2023 ACS five-year. https://www2.census.gov/programs-surveys/acs/summary_file/2023/table-based-SF/data/5YRData (retrieved 2026-11-08).
+9. Census 2020 populated block counts and internal points. 2020 Census; retrieved 2026-11-08T21:59:20.554324+00:00. https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/tigerWMS_Census2020/MapServer/10 (retrieved 2026-11-08).
+10. Trust for Public Land ParkServe public parks and 10-minute walk service areas. Public service snapshot retrieved 2026-11-08T21:59:19.239019+00:00. https://www.tpl.org/park-data-downloads (retrieved 2026-11-08).
+
+</details>
+
+<details>
+<summary>Same model with no tools or system prompt</summary>
+
+The intersection of walkability, mental health, and social connection is a rapidly growing area of public health, urban planning, and environmental psychology research. The core premise is that walkable neighborhoods reduce reliance on cars, encourage physical activity, and naturally increase “eyes on the street” and spontaneous social interactions. 
+
+However, **this relationship is not uniform.** The mental health and social benefits of walkability vary significantly depending on neighborhood demographics (race, socioeconomic status, age) and the physical presence and quality of public gathering places. 
+
+Here is an analysis of how these factors vary, supported by current research and underlying theoretical explanations.
+
+---
+
+### 1. The Role of Neighborhood Demographics
+
+Demographic factors—particularly socioeconomic status (SES), race/ethnicity, and age—fundamentally alter how residents experience walkability and how it impacts their mental health and loneliness.
+
+#### A. Socioeconomic Status (SES) and "The Environmental Paradox"
+*   **The Discrepancy:** In high-SES neighborhoods, walkability is consistently linked to lower rates of depression, anxiety, and loneliness. However, in low-SES or historically marginalized neighborhoods, high walkability does not always yield the same mental health benefits, and sometimes correlates with *worse* outcomes (such as higher stress or perceived lack of safety).
+*   **Evidence:** Studies often find that low-income, highly walkable neighborhoods frequently suffer from **"compounding environmental stressors."** While a neighborhood may have high street connectivity and dense housing, it may also feature high traffic volume, air pollution, dilapidated sidewalks, and a lack of green space. 
+*   **Gentrification and Displacement:** In transitioning or gentrifying neighborhoods, increased walkability is often a precursor to rising rents and displacement. Research shows that the *fear* of displacement and the influx of unfamiliar amenities can heighten anxiety and feelings of alienation among long-term, lower-income residents, neutralizing the positive social effects of walkable infrastructure.
+
+#### B. Race, Ethnicity, and Perceived Safety
+*   **The Discrepancy:** The psychological benefit of walking relies heavily on *perceived safety*. If a neighborhood is walkable on paper (grid system, high density) but lacks social safety, the physical act of walking can induce hypervigilance rather than relaxation.
+*   **Evidence:** Research in environmental justice demonstrates that minority neighborhoods are less likely to have well-maintained pedestrian infrastructure (e.g., adequate lighting, crosswalks, continuous sidewalks). Furthermore, marginalized groups may experience heightened anxiety regarding police presence, racial profiling, or street harassment while walking. Consequently, physical activity and spontaneous social interactions decrease, increasing isolation.
+
+#### C. Age (Youth and Older Adults)
+*   **Older Adults:** Walkability is a primary determinant of loneliness and mental health for seniors. In age-friendly, walkable communities, seniors experience lower rates of depression because they can independently access daily needs. Conversely, in car-centric or poorly maintained walkable areas, seniors face mobility-locked isolation.
+*   **Children and Teens:** Walkability increases youth autonomy and peer socialization. However, in neighborhoods with high crime rates or heavy traffic, parents restrict children's outdoor mobility, leading to indoor isolation and increased screen time, which are linked to youth mental health challenges.
+
+---
+
+### 2. The Mediating Role of Public Gathering Places
+
+Walkability alone (sidewalks and destinations) is often insufficient to combat loneliness. **Public gathering places**—often referred to as "Third Places" (cafes, parks, libraries, community centers, plazas)—act as the catalysts that turn physical movement into social connection.
+
+*   **The Catalyst Effect:** A person can walk through a dense, highly walkable neighborhood and feel entirely isolated if there are no reasons to linger. Public spaces provide the friction necessary for human contact.
+*   **Quality vs. Quantity:** It is not merely the presence of a park or square, but its *quality* and *inclusivity* that matter. High-quality public spaces feature comfortable seating, shade, programming, and maintenance. 
+*   **Demographic Access to Gathering Places:** Access to well-funded, safe public spaces is deeply inequitable. Low-income and minority neighborhoods often suffer from "park deserts" or poorly maintained parks with broken amenities, which research links to higher psychological distress and community-level loneliness.
+
+---
+
+### 3. Possible Explanations and Supporting Evidence
+
+Why do these variations occur? Several psychological, sociological, and physiological mechanisms explain the link between walkability, social connection, and mental health, and why they depend on demographics and public spaces:
+
+#### A. The "Broken Windows" and Perceived Safety Hypothesis
+*   **Explanation:** Physical disorder (litter, graffiti, broken sidewalks, vacant lots) signals to the brain that a neighborhood is unsafe or lacks social cohesion. This triggers a stress response (activation of the amygdala and cortisol production).
+*   **Evidence:** Environmental psychology studies show that individuals walking in aesthetically pleasing, orderly environments experience greater restoration (attention restoration theory) and reductions in stress compared to those walking in visually blighted, high-walkability urban corridors. In low-SES areas, the absence of aesthetic maintenance often negates the cardiovascular and mental health benefits of walking.
+
+#### B. Social Capital and Weak Ties Theory
+*   **Explanation:** Sociologist Mark Granovetter highlighted the value of "weak ties"—casual interactions with acquaintances, neighbors, or shopkeepers. Walkability increases the frequency of these weak ties (e.g., nodding to a neighbor, chatting with a barista). Regular minor interactions significantly reduce the feeling of loneliness and foster a sense of belonging.
+*   **Evidence:** Research on "Third Places" shows that frequency of visiting local gathering spots correlates directly with a higher sense of community belonging and lower loneliness. However, if public gathering places are exclusionary (e.g., high-end cafes that price out long-term residents), marginalized groups cannot form these weak ties, exacerbating social exclusion.
+
+#### C. Environmental Stressors (Noise and Air Pollution)
+*   **Explanation:** High walkability often coincides with high density and heavy traffic. Chronic exposure to traffic noise and air pollution (particulate matter) is directly linked to increased rates of depression, anxiety, and cognitive fatigue.
+*   **Evidence:** Epidemiological studies controlling for physical activity find that walking along high-traffic corridors exposes individuals to pollutants that can induce systemic inflammation, which is increasingly linked by neuroscientists to depressive symptoms. Thus, the *type* of walkability (green pedestrian paths vs. congested concrete canyons) dictates the mental health outcome.
+
+#### D. The Autonomy and Self-Determination Theory (SDT)
+*   **Explanation:** Mental well-being relies on three psychological needs: autonomy, competence, and relatedness. Walkability supports autonomy (the ability to move freely without relying on others or a car) and relatedness (connecting with others).
+*   **Evidence:** When older adults or low-income residents lose the ability to walk safely in their neighborhoods due to poor infrastructure or crime, their sense of autonomy plummets, directly triggering depressive symptoms and loneliness. 
+
+---
+
+### Summary Table: How Context Alters the Walkability-Mental Health Link
+
+| Neighborhood Context | Impact of Walkability on Social Connection | Impact of Walkability on Mental Health | Primary Moderating Factors |
+| :--- | :--- | :--- | :--- |
+| **High SES / Safe / Green** | **High:** Frequent weak ties, active public spaces. | **Positive:** Lower depression/anxiety, stress reduction. | Aesthetic quality, safety, low pollution, access to green spaces. |
+| **Low SES / Blighted** | **Variable/Low:** Movement without meaningful connection. | **Neutral to Negative:** Increased stress, hypervigilance. | Crime, traffic danger, physical disorder, lack of quality third places. |
+| **Gentrifying** | **Friction:** Social fragmentation between old and new residents. | **Anxiety-Inducing:** Fear of displacement, alienation. | Housing cost stability, social inclusivity of new amenities. |
+| **Age-Friendly (Seniors)** | **High:** Prevents isolation, maintains independence. | **Positive:** High life satisfaction, lower loneliness. | Benches, well-lit sidewalks, accessible public transport links. |
+
+### Conclusion
+Walkability is a powerful tool for improving mental health and reducing loneliness, but **it is not a neutral intervention**. Its benefits are contingent upon the socio-spatial context. To effectively leverage walkability for mental health, urban planning must move beyond mere grid density and focus on **equitable investment**—ensuring that all neighborhoods, regardless of demographics, feature safe, aesthetically pleasing pedestrian infrastructure, clean air, and inclusive public gathering places where meaningful social bonds can form.
 
 </details>
 
