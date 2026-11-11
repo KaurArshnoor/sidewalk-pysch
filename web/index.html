@@ -24,7 +24,6 @@
     box-shadow:inset 0 -6px 0 var(--paving),inset 0 -8px 0 var(--curb)}
   .masthead-inner{display:flex;gap:18px;align-items:flex-start}
   .mark{flex:none;width:52px;height:52px;margin-top:4px}
-  .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--park);font-weight:600}
   h1{font-family:Georgia,serif;font-size:48px;font-weight:400;margin:4px 0 8px;line-height:1.1}
   .masthead p{margin:0 0 14px;color:var(--ink-soft);font-size:16px}
   .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,254,249,.9);border:1px solid var(--paving-line);
@@ -49,20 +48,55 @@
   .page-note{margin-top:28px;padding-top:16px;border-top:2px solid var(--curb);box-shadow:inset 0 4px 0 var(--paving)}
   @media(max-width:600px){h1{font-size:36px}main{padding:20px 16px 60px}section{padding:26px 16px 18px}
     .masthead{padding:22px 18px 24px}.mark{width:40px;height:40px}}
+  /* Study setup */
+  .setup{padding:0;overflow:hidden;box-shadow:none}
+  #task{display:grid;grid-template-columns:250px minmax(0,1fr)}
+  .agent-picker{min-width:0;margin:0;padding:22px 16px;border-right:1px solid var(--line);background:#f3f5ef}
+  .agent-options{min-inline-size:0;margin:0;padding:0;border:0}
+  .agent-options legend{font-size:14px;font-weight:700;padding:0 0 12px}
+  .agent-grid{display:grid;gap:6px}
+  .agent-option{position:relative;margin:0;cursor:pointer}
+  .agent-option input{position:absolute;width:1px;height:1px;margin:0;clip-path:inset(50%)}
+  .agent-tile{display:flex;align-items:center;gap:10px;min-height:54px;padding:8px;border:1px solid transparent;border-radius:8px}
+  .agent-option:hover .agent-tile{background:#e8eee6}
+  .agent-option input:focus-visible + .agent-tile{outline:2px solid var(--park);outline-offset:2px}
+  .agent-option input:checked + .agent-tile{background:white;border-color:#90b19f}
+  .agent-option input:checked + .agent-tile .agent-name::after{content:"";display:inline-block;width:5px;height:9px;
+    border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);margin:0 0 1px 8px}
+  .agent-icon{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:7px;background:#e2ebe2;color:var(--park)}
+  .agent-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .agent-name,.agent-desc{display:block}
+  .agent-name{font-size:14px;font-weight:700;line-height:1.25}
+  .agent-desc{margin-top:3px;font-size:12px;line-height:1.35;font-weight:400;color:var(--ink-soft)}
+  .agent-option.primary{margin-bottom:4px}
+  .agent-option.primary .agent-tile{background:#e3eee4;border-color:#c8dbc9}
+  .agent-option.primary:hover .agent-tile{background:#d7e8d9}
+  .agent-option.primary input:checked + .agent-tile{background:var(--park);border-color:var(--park);color:white}
+  .agent-option.primary input:checked + .agent-tile .agent-icon{background:rgba(255,255,255,.16);color:white}
+  .agent-option.primary input:checked + .agent-tile .agent-desc{color:#e4f0e8}
+  .agent-options:disabled .agent-option{cursor:wait}
+  .question-panel{min-width:0;padding:24px 28px 26px}
+  .question-panel h2{margin:0 0 14px}
+  .question-panel textarea{display:block;min-height:112px}
+  .question-panel select:disabled{background:#f3f5ef;color:var(--muted)}
+  .field-note{margin:5px 0 0}
+  .run-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;margin-top:14px}
+  .run-actions button,#status{margin:0}
+  @media(max-width:640px){
+    #task{grid-template-columns:minmax(0,1fr)}
+    .agent-picker{padding:16px;border-right:0;border-bottom:1px solid var(--line)}
+    .agent-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .agent-option.primary{grid-column:1/-1}
+    .question-panel{padding:20px 16px}
+  }
   /* Readable report (full study) */
   #report{max-width:760px}#report[hidden]{display:none}
-  .report-bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;font-size:13px;color:#65776c;border-bottom:1px solid #e2e6dc;padding-bottom:12px;margin-bottom:8px}
+  .report-bar{display:flex;justify-content:flex-end;margin-bottom:8px}
   .report-bar button{margin:0;padding:6px 12px;font-size:13px;background:white;color:#285f4b;border:1px solid #a8b9ac}
   .report-bar button:hover{background:#eef4ef}
-  .report-bar label{display:inline-flex;gap:6px;align-items:center;margin:0;font-weight:400}
-  .legend span{margin-left:8px;padding-bottom:1px}
   .rsec{margin:26px 0 0;background:none;border:0;padding:0;border-radius:0;box-shadow:none}.rsec h3{font-family:Georgia,serif;font-weight:400;font-size:22px;margin:0 0 8px;color:#18362e}
   .rsec p,.rsec li{font-size:16px;line-height:1.7;max-width:none}.rsec.question p{font-size:18px;font-style:italic;color:#264c3f}
   .cite{font-size:11px;margin-left:1px}.cite a{text-decoration:none;color:#285f4b;font-weight:600}.cite a:hover{text-decoration:underline}
-  .show-hedge .h-suggests{text-decoration:underline solid #9cc2ae 2px;text-underline-offset:4px}
-  .show-hedge .h-exploratory{text-decoration:underline dotted #b7903d 2px;text-underline-offset:4px}
-  .show-hedge .h-unknown{text-decoration:underline dashed #9aa59d 2px;text-underline-offset:4px}
-  .legend .h-suggests,.legend .h-exploratory,.legend .h-unknown{text-decoration-thickness:2px}
   .comparisons{list-style:none;padding:0;margin:0}.comparisons li{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;padding:12px 0;border-top:1px solid #e9ece4}
   .comparisons li:first-child{border-top:0}.comparisons .s{flex:1 1 320px}
   .chip{display:inline-block;flex:none;font-size:12px;font-weight:600;letter-spacing:.02em;padding:2px 10px;border-radius:12px;border:1px solid}
@@ -71,7 +105,7 @@
   .limits{padding-left:20px;margin:0}.limits li{margin:4px 0}
   .gaps{margin-top:28px;background:#fbf6e8;border:1px solid #eadcae;border-left:4px solid #c9a44c;border-radius:6px;padding:14px 18px}
   .gaps h3{font-family:inherit;font-size:15px;font-weight:600;margin:0 0 6px}.gaps ul{margin:0;padding-left:20px}.gaps li{font-size:14px;margin:4px 0}
-  .refs{font-size:14px;padding-left:24px}.refs li{margin:6px 0;scroll-margin-top:20px}.refs li:target{background:#fff1c5;border-radius:4px}
+  .refs{font-size:14px;padding-left:24px;overflow-wrap:anywhere}.refs li{margin:6px 0;scroll-margin-top:20px}.refs li:target{background:#fff1c5;border-radius:4px}
   .refs .venue{font-style:italic}.refs .tag{font-size:11px;border:1px solid #b7a05d;background:#fff1c5;border-radius:10px;padding:0 6px;margin-left:4px}
   .report-details{margin-top:18px;font-size:14px}.report-details ul{padding-left:20px}
   .agent-status{list-style:none;padding:0}.agent-status li{margin:6px 0}.agent-status .chip{margin-right:8px;min-width:72px;text-align:center}
@@ -158,21 +192,65 @@
       <rect x="24.6" y="22" width="3" height="12" fill="#a07c55"/>
       <circle cx="26" cy="18" r="10" fill="#7fb493"/><circle cx="21" cy="21" r="6" fill="#5f9a6e"/>
     </svg>
-    <div><div class="eyebrow">Neighborhoods &amp; mental health · a research workbench</div><h1>Sidewalk Psych</h1>
-    <p>For researchers studying walkability and mental health. Inspect neighborhood measures, check their limits, test tract-level associations, and compare them with published research.</p>
+    <div><h1>Sidewalk Psych</h1>
+    <p>Explore how neighborhood walkability relates to mental health across 20 U.S. metro areas.</p>
     <span id="mode" class="badge">Checking dataset…</span></div></div></header>
-  <section><h2>Explore a metro area</h2><p class="muted">Choose a metro, then ask a question about walkability, park access, or mental distress. Full study compares the tract results with published research. Open Tool calls to see the evidence.</p>
-    <form id="task"><label for="metro">Metro area</label><select id="metro"><option value="">All 20 metros</option></select>
-      <p class="muted">Metro areas include the city and surrounding counties, rather than city limits.</p><label for="agent">Specialist</label><select id="agent">
-      <option value="built_environment">Built environment researcher · walkability, amenities, parks</option>
-      <option value="health_demographics">Health and demographics researcher · CDC + ACS</option>
-      <option value="analyst">Analyst · unadjusted and adjusted associations</option>
-      <option value="literature">Literature researcher · PubMed, OpenAlex, PsyArXiv (metro not used)</option>
-      <option value="study" selected>Full study · plans, runs the agents, compares literature and data, writes a verified report</option></select>
-      <label for="question">Question</label><textarea id="question" maxlength="2000">How do unadjusted and adjusted walkability–mental-distress associations compare with published research on depression?</textarea>
-      <button id="run">Explore data</button><span id="status" role="status"></span></form>
+  <section class="setup" aria-labelledby="setup-title">
+    <form id="task">
+      <div class="agent-picker">
+        <fieldset id="agent-options" class="agent-options">
+          <legend>Research mode</legend>
+          <div class="agent-grid">
+            <label class="agent-option primary">
+              <input type="radio" name="agent" value="study" checked aria-labelledby="mode-study" aria-describedby="desc-study">
+              <span class="agent-tile">
+                <span class="agent-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Zm6-3v15m6-12v15"/></svg></span>
+                <span><span class="agent-name" id="mode-study">Full study</span><span class="agent-desc" id="desc-study">Data, literature, and a verified report</span></span>
+              </span>
+            </label>
+            <label class="agent-option">
+              <input type="radio" name="agent" value="built_environment" aria-labelledby="mode-environment" aria-describedby="desc-environment">
+              <span class="agent-tile">
+                <span class="agent-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21v-7m-7 2 3-5H6l6-8 6 8h-2l3 5H5Zm-2 5h18"/></svg></span>
+                <span><span class="agent-name" id="mode-environment">Walkability</span><span class="agent-desc" id="desc-environment">Parks and gathering places</span></span>
+              </span>
+            </label>
+            <label class="agent-option">
+              <input type="radio" name="agent" value="health_demographics" aria-labelledby="mode-health" aria-describedby="desc-health">
+              <span class="agent-tile">
+                <span class="agent-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.8 5.7a4.6 4.6 0 0 0-6.5 0L12 8l-2.3-2.3a4.6 4.6 0 0 0-6.5 6.5L12 21l8.8-8.8a4.6 4.6 0 0 0 0-6.5Z"/><path d="M5 12h4l1-2 2 4 1-2h6"/></svg></span>
+                <span><span class="agent-name" id="mode-health">Health</span><span class="agent-desc" id="desc-health">Mental health and demographics</span></span>
+              </span>
+            </label>
+            <label class="agent-option">
+              <input type="radio" name="agent" value="analyst" aria-labelledby="mode-analysis" aria-describedby="desc-analysis">
+              <span class="agent-tile">
+                <span class="agent-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4v16h16M8 16v-3m5 3V9m5 7V5"/></svg></span>
+                <span><span class="agent-name" id="mode-analysis">Analysis</span><span class="agent-desc" id="desc-analysis">Compare tract-level patterns</span></span>
+              </span>
+            </label>
+            <label class="agent-option">
+              <input type="radio" name="agent" value="literature" aria-labelledby="mode-literature" aria-describedby="desc-literature">
+              <span class="agent-tile">
+                <span class="agent-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 6v15m0-15c-3-2-6-2-9-1v14c3-1 6-1 9 2 3-3 6-3 9-2V5c-3-1-6-1-9 1Z"/></svg></span>
+                <span><span class="agent-name" id="mode-literature">Literature</span><span class="agent-desc" id="desc-literature">Search published studies</span></span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+      </div>
+      <div class="question-panel">
+        <h2 id="setup-title">Ask a research question</h2>
+        <label for="metro">Metro area</label>
+        <select id="metro" aria-describedby="metro-note"><option value="">All 20 metros</option></select>
+        <p id="metro-note" class="field-note muted">Metro areas include the city and surrounding counties.</p>
+        <label for="question">Question</label>
+        <textarea id="question" minlength="5" maxlength="2000" required></textarea>
+        <div class="run-actions"><button id="run" type="submit">Run full study</button><span id="status" role="status"></span></div>
+      </div>
+    </form>
   </section>
-  <section><h2>Findings</h2><p id="scope" class="muted"></p><div id="route" hidden aria-label="Study progress"></div><article id="report" hidden></article><div id="cards" hidden></div><div id="response">The selected agent's tool-supported findings will appear here.</div>
+  <section><h2>Findings</h2><p id="scope" class="muted"></p><div id="route" hidden aria-label="Study progress"></div><article id="report" hidden></article><div id="cards" hidden></div><div id="response">Run a study or an individual agent to see findings here.</div>
     <details><summary>Tool activity and model context</summary><ol id="activity"></ol><div id="context-container"></div></details>
     <details><summary>Sources</summary><ul id="sources"></ul></details><details><summary>Structured findings and caveats</summary><pre id="findings">No run yet.</pre></details>
     <details><summary>Tool calls · includes agent names</summary><pre id="tools">No run yet.</pre></details></section>
@@ -198,23 +276,17 @@
     try { const parsed = new URL(url); return ['https:', 'http:'].includes(parsed.protocol) ? parsed.href : null; }
     catch { return null; }
   }
-  const HEDGE = {
-    established: 'Established: the cited evidence supports a direct statement',
-    suggests: 'Suggests: moderate evidence, worded tentatively',
-    exploratory: 'Exploratory: weak or exploratory evidence; a lead, not a conclusion',
-    unknown: 'Unknown: the evidence cannot answer this',
-  };
   const VERDICT = {
     agrees: ['Agrees', 'agrees'], conflicts: ['Conflicts', 'conflicts'],
     not_comparable: ['Not comparable', 'na'], direction_unclear: ['Direction unclear', 'unclear'],
   };
   const AGENT_LABEL = {
-    built_environment: 'Built environment', health_demographics: 'Health & demographics',
-    analyst: 'Analyst', literature: 'Literature',
+    built_environment: 'Walkability', health_demographics: 'Health',
+    analyst: 'Analysis', literature: 'Literature',
   };
 
-  function sentence(item, withHedge = true) {
-    const span = el('span', withHedge ? { class: 's h-' + item.hedge, title: HEDGE[item.hedge] } : { class: 's' }, item.text);
+  function sentence(item) {
+    const span = el('span', { class: 's' }, item.text);
     if (item.citations.length) {
       const sup = el('sup', { class: 'cite' });
       item.citations.forEach((n, i) => {
@@ -244,17 +316,11 @@
     const view = report.view, root = $('report');
     root.replaceChildren();
 
-    const toggle = el('input', { type: 'checkbox', id: 'hedge-toggle', checked: '' });
-    toggle.onchange = () => root.classList.toggle('show-hedge', toggle.checked);
     const copy = el('button', { type: 'button', text: 'Copy as Markdown' });
     copy.onclick = () => navigator.clipboard.writeText(report.markdown).then(
       () => { copy.textContent = 'Copied'; setTimeout(() => copy.textContent = 'Copy as Markdown', 1500); },
       () => { copy.textContent = 'Copy failed'; });
-    const legend = el('span', { class: 'legend' }, 'Wording:',
-      ...['suggests', 'exploratory', 'unknown'].map(h => el('span', { class: 'h-' + h, title: HEDGE[h], text: h })));
-    root.append(el('div', { class: 'report-bar' },
-      el('label', {}, toggle, 'Show how strongly each sentence is worded'), legend, copy));
-    root.classList.add('show-hedge');
+    root.append(el('div', { class: 'report-bar' }, copy));
 
     for (const section of view.sections) {
       const heading = section.heading;
@@ -269,7 +335,7 @@
         block.append(el('ul', { class: 'limits' }, ...section.sentences.map(item => el('li', {}, sentence(item)))));
       } else {
         const paragraph = el('p');
-        section.sentences.forEach((item, i) => { if (i) paragraph.append(' '); paragraph.append(sentence(item, heading !== 'Question')); });
+        section.sentences.forEach((item, i) => { if (i) paragraph.append(' '); paragraph.append(sentence(item)); });
         block.append(paragraph);
       }
       root.append(block);
@@ -677,24 +743,64 @@
   const $=id=>document.getElementById(id); let source=null,runId=null;
   $('context-container').appendChild(document.getElementById('context-panel'));
   const traceStyle=document.createElement('style');traceStyle.textContent='body{margin-right:0}#context-panel,#context-panel.timeline{position:static;width:100%;height:auto;max-height:560px;border:0;padding:12px}details{margin:14px 0}a{color:#285f4b}';document.head.appendChild(traceStyle);
-  const samples={built_environment:'What walkability and park-access measures are available, and what are their limits?',health_demographics:'What do CDC frequent mental distress and ACS poverty measure in this snapshot?',analyst:'Do more walkable neighborhoods have lower frequent mental distress? Compare unadjusted and adjusted associations. What can these data tell us about loneliness, social connection, and why?',literature:'What does published research report about neighborhood walkability and loneliness or depression? Include study designs and sample sizes.',study:'Are more walkable neighborhoods associated with lower frequent mental distress after adjustment, and how does that compare with published research on walkability, depression and loneliness?'};
+  const samples = {
+    study: 'How do unadjusted and adjusted walkability–mental distress associations compare with published research on walkability and depression?',
+    built_environment: 'Summarize walkability scores, estimated park access, and mapped gathering places. How many tracts have each measure?',
+    health_demographics: 'What are the average tract rates of frequent mental distress and poverty, and how many tracts have each estimate?',
+    analyst: 'How does walkability relate to frequent mental distress? Compare the unadjusted and adjusted estimates.',
+    literature: 'What have published studies found about neighborhood walkability and depression? Describe their study designs.',
+  };
   function addSources(items){for(const item of items){const url=new URL(item.url);if(!['https:','http:'].includes(url.protocol))continue;const li=document.createElement('li'),link=document.createElement('a');link.href=url.href;link.textContent=item.title;link.target='_blank';link.rel='noopener noreferrer';li.appendChild(link);$('sources').appendChild(li)}}
   function showStudy(event){const seen=new Set(),sources=[];for(const r of event.results)for(const s of r.sources)if(!seen.has(s.id)){seen.add(s.id);sources.push(s)}addSources(sources);
     if(event.report&&event.report.view&&event.report.view.sections){try{renderReport(event.report,event.agents)}catch(err){console.error(err);$('report').hidden=true;$('response').hidden=false;$('response').textContent=event.report.markdown}}
     else{const plan=event.agents.map(a=>`- ${a.role}: ${a.status}${a.error?' ('+a.error+')':` (${a.findings} findings)`} · ${a.sub_question}`).join('\n');
       $('response').textContent=(event.report?event.report.markdown:event.clarification)+(plan?'\n\n---\nPlan\n'+plan:'')}
     $('findings').textContent=JSON.stringify(event.results,null,2);$('tools').textContent=JSON.stringify({plan:event.plan,followup_tasks:event.followup_tasks,notes:event.plan_notes,agents:event.agents},null,2)}
-  $('agent').onchange=()=>{$('question').value=samples[$('agent').value]};
+  const task = $('task'), question = $('question'), metroPicker = $('metro');
+  const metroNote = $('metro-note').textContent;
+  const questionDrafts = new Map();
+  let activeAgent = task.elements.agent.value;
+  question.value = samples[activeAgent];
+
+  $('agent-options').addEventListener('change', event => {
+    questionDrafts.set(activeAgent, question.value);
+    activeAgent = event.target.value;
+    question.value = questionDrafts.get(activeAgent) ?? samples[activeAgent];
+    const literature = activeAgent === 'literature';
+    metroPicker.disabled = literature;
+    $('metro-note').textContent = literature ? 'Literature searches published studies across locations.' : metroNote;
+    $('run').textContent = activeAgent === 'study' ? 'Run full study' : 'Run ' + AGENT_LABEL[activeAgent].toLowerCase() + ' agent';
+  });
   fetch('/metadata').then(r=>{if(!r.ok)throw Error('Snapshot unavailable');return r.json()}).then(m=>{
     $('mode').textContent=(m.synthetic?'Synthetic test data':'Real study data')+' · '+Number(m.rows).toLocaleString()+' tracts'+(m.metros&&m.metros.length?' · '+m.metros.length+' metro areas':'');if(m.synthetic)$('mode').classList.add('warn');
     $('metadata').textContent=JSON.stringify(m,null,2);
     for(const metro of m.scope.metro_lookup){const option=document.createElement('option');option.value=metro.metro;option.textContent=metro.name;$('metro').appendChild(option)}
   }).catch(e=>{$('mode').textContent=e.message;$('mode').classList.add('warn')});
-  function finish(text){$('status').textContent=text;$('run').disabled=false;if(source)source.close()}
-  $('task').onsubmit=e=>{e.preventDefault();if(source)source.close();resetContext();$('report').hidden=true;$('report').replaceChildren();$('cards').hidden=true;$('cards').replaceChildren();$('response').hidden=false;$('run').disabled=true;$('status').textContent='Running…';$('activity').replaceChildren();$('scope').textContent=$('metro').selectedOptions[0].textContent;$('response').textContent='Analyzing the selected scope…';$('sources').replaceChildren();$('findings').textContent='Running…';$('tools').textContent='Running…';
-    const study=$('agent').value==='study',params=new URLSearchParams({question:$('question').value.trim()});
-    if(!study)params.set('agent',$('agent').value);
-    if($('metro').value)params.set('metro',$('metro').value);
+  function finish(text){$('status').textContent=text;$('run').disabled=false;$('agent-options').disabled=false;metroPicker.disabled=activeAgent==='literature';if(source)source.close()}
+  task.onsubmit=e=>{
+    e.preventDefault();
+    if(source)source.close();
+    resetContext();
+    $('report').hidden=true;
+    $('report').replaceChildren();
+    $('cards').hidden=true;
+    $('cards').replaceChildren();
+    $('response').hidden=false;
+    $('run').disabled=true;
+    $('agent-options').disabled=true;
+    metroPicker.disabled=true;
+    $('status').textContent='Running…';
+    $('activity').replaceChildren();
+    $('sources').replaceChildren();
+    $('findings').textContent='Running…';
+    $('tools').textContent='Running…';
+
+    const study=activeAgent==='study', literature=activeAgent==='literature';
+    $('scope').textContent=literature ? 'Published literature' : metroPicker.selectedOptions[0].textContent;
+    $('response').textContent='Gathering evidence…';
+    const params=new URLSearchParams({question:question.value.trim()});
+    if(!study)params.set('agent',activeAgent);
+    if(!literature && metroPicker.value)params.set('metro',metroPicker.value);
     source=new EventSource((study?'/study/run?':'/run?')+params);
     clearInterval(Route.timer);Route.agents=null;$('route').hidden=true;if(study){Route.start();$('response').textContent='The report will appear here when the route is finished.'}
     source.onmessage=message=>{const event=JSON.parse(message.data);
